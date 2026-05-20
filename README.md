@@ -14,10 +14,14 @@ Assign any image or video to each of your Mission Control Spaces. Changes take e
 
 - macOS 13 (Ventura) or later
 - Apple Silicon (M1 or later)
-- Xcode Command Line Tools (`xcode-select --install`)
-- Homebrew (`brew install create-dmg`)
 
-## Build and Install
+## Install
+
+Download the latest `Eigenframe.dmg` from the [Releases page](https://github.com/drabhikroy/Eigenframe/releases), open it, and drag Eigenframe to your Applications folder. Right-click and choose Open on first launch to bypass the Gatekeeper warning.
+
+## Build from Source
+
+To build from source you will also need Xcode Command Line Tools (`xcode-select --install`) and Homebrew (`brew install create-dmg`).
 
 ### Step 1: Create a signing certificate (required once)
 
