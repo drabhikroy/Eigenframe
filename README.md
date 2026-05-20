@@ -106,6 +106,13 @@ Use the **Pause** button in the control panel or menu bar to stop all video play
 
 Open `Help/Eigenframe_Help.html` in any browser, or launch the app and choose **Help and FAQ** from the menu bar icon.
 
+## Screenshot Credits
+
+The wallpapers shown in the screenshots are NASA/ESA public domain imagery.
+
+- **Black hole accretion disk** — NASA's Goddard Space Flight Center / Jeremy Schnittman. [Source](https://svs.gsfc.nasa.gov/13326/)
+- **Herbig-Haro 49/50 (Cosmic Tornado)** — NASA, ESA, CSA, STScI. James Webb Space Telescope. [Source](https://esawebb.org/news/weic2506/)
+
 ## Disclaimer
 
 The software is provided as-is, without warranty of any kind, express or implied. By using Eigenframe you accept all risks associated with its use. The authors accept no responsibility for data loss, system instability, unexpected behavior following a macOS update, or any other issues arising from its use.
