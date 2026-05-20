@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eigenframe - Help and FAQ</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg:        #09090f;
+    --bg2:       #0f0f1a;
+    --bg3:       #141424;
+    --border:    rgba(255,255,255,0.07);
+    --border2:   rgba(255,255,255,0.12);
+    --text:      #e8e8f0;
+    --text2:     rgba(232,232,240,0.55);
+    --text3:     rgba(232,232,240,0.28);
+    --cyan:      #00d2ff;
+    --cyan-dim:  rgba(0,210,255,0.12);
+    --cyan-glow: rgba(0,210,255,0.06);
+    --accent:    #7b6fff;
+    --accent-dim:rgba(123,111,255,0.12);
+    --green:     #22c55e;
+    --orange:    #f97316;
+    --red:       #ef4444;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,0.35) 0%, transparent 100%),
+      radial-gradient(1px 1px at 34% 7%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 56% 23%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 78% 11%, rgba(255,255,255,0.25) 0%, transparent 100%),
+      radial-gradient(1px 1px at 91% 38%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 23% 54%, rgba(255,255,255,0.15) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 67% 61%, rgba(255,255,255,0.28) 0%, transparent 100%),
+      radial-gradient(1px 1px at 45% 82%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 88% 74%, rgba(255,255,255,0.22) 0%, transparent 100%),
+      radial-gradient(1px 1px at 5% 91%, rgba(255,255,255,0.18) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .layout {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+  }
+
+  .sidebar {
+    width: 230px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 36px 0 36px 28px;
+    border-right: 1px solid var(--border);
+    background: rgba(9,9,15,0.85);
+    backdrop-filter: blur(12px);
+  }
+
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+
+  .logo-icon {
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(135deg, #00d2ff, #0055cc);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .logo-name { font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: -0.2px; }
+  .logo-sub { font-size: 10px; color: var(--text3); font-weight: 400; margin-top: 1px; }
+
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin: 24px 0 8px;
+  }
+
+  .nav-link {
+    display: block;
+    font-size: 13px;
+    color: var(--text2);
+    text-decoration: none;
+    padding: 5px 0;
+    transition: color 0.15s;
+  }
+
+  .nav-link:hover { color: var(--text); }
+  .nav-link.active { color: var(--cyan); }
+
+  .main {
+    flex: 1;
+    max-width: 760px;
+    padding: 56px 56px 80px;
+  }
+
+  .hero {
+    margin-bottom: 56px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 12px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .hero h1 {
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: -0.8px;
+    line-height: 1.2;
+    margin-bottom: 16px;
+    color: #fff;
+  }
+
+  .hero p { font-size: 16px; color: var(--text2); line-height: 1.7; max-width: 540px; }
+
+  .origin-block {
+    margin-top: 24px;
+    padding: 18px 20px;
+    background: var(--cyan-glow);
+    border: 1px solid rgba(0,210,255,0.12);
+    border-radius: 12px;
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.7;
+    max-width: 580px;
+  }
+
+  .section {
+    margin-bottom: 56px;
+    scroll-margin-top: 32px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .section-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .icon-cyan { background: var(--cyan-dim); color: var(--cyan); }
+  .icon-purple { background: var(--accent-dim); color: var(--accent); }
+  .icon-green { background: rgba(34,197,94,0.1); color: var(--green); }
+  .icon-orange { background: rgba(249,115,22,0.1); color: var(--orange); }
+
+  .section h2 { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; color: #fff; }
+
+  .steps { display: flex; flex-direction: column; gap: 12px; }
+
+  .step {
+    display: flex;
+    gap: 16px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    align-items: flex-start;
+    transition: border-color 0.15s;
+  }
+
+  .step:hover { border-color: var(--border2); }
+
+  .step-num {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--cyan-dim);
+    border: 1px solid rgba(0,210,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--cyan);
+    font-family: 'DM Mono', monospace;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .step-content { flex: 1; }
+  .step-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .step-body { font-size: 13.5px; color: var(--text2); line-height: 1.6; }
+
+  .step-body code {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    background: rgba(255,255,255,0.06);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--cyan);
+  }
+
+  .faq-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .faq-item {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+
+  .faq-item:hover { border-color: var(--border2); }
+  .faq-item.open { border-color: rgba(0,210,255,0.18); }
+
+  .faq-question {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 15px 18px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .faq-chevron { font-size: 12px; color: var(--text3); transition: transform 0.2s; flex-shrink: 0; }
+  .faq-item.open .faq-chevron { transform: rotate(180deg); color: var(--cyan); }
+
+  .faq-answer {
+    display: none;
+    padding: 14px 18px 16px;
+    font-size: 13.5px;
+    color: var(--text2);
+    line-height: 1.7;
+    border-top: 1px solid var(--border);
+  }
+
+  .faq-item.open .faq-answer { display: block; }
+
+  .faq-answer code {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    background: rgba(255,255,255,0.06);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--cyan);
+  }
+
+  .faq-answer pre {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin: 10px 0;
+    overflow-x: auto;
+  }
+
+  .faq-answer pre code {
+    background: none;
+    padding: 0;
+    font-size: 12.5px;
+    color: var(--text);
+    display: block;
+    line-height: 1.6;
+  }
+
+  .callout {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    margin: 16px 0;
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+
+  .callout-info { background: var(--cyan-glow); border: 1px solid rgba(0,210,255,0.14); color: var(--text2); }
+  .callout-warn { background: rgba(249,115,22,0.06); border: 1px solid rgba(249,115,22,0.2); color: var(--text2); }
+  .callout-success { background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.2); color: var(--text2); }
+  .callout-icon { flex-shrink: 0; font-size: 15px; margin-top: 1px; }
+
+  kbd {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 5px;
+    padding: 1px 7px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .shortcuts-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+  .shortcuts-table tr { border-bottom: 1px solid var(--border); }
+  .shortcuts-table tr:last-child { border-bottom: none; }
+  .shortcuts-table td { padding: 10px 0; font-size: 13.5px; vertical-align: middle; }
+  .shortcuts-table td:first-child { color: var(--text2); }
+  .shortcuts-table td:last-child { text-align: right; }
+
+  .format-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 4px;
+  }
+
+  .format-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+
+  .format-card-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--cyan);
+    margin-bottom: 8px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+
+  .format-list {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.8;
+  }
+
+  .version-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 11.5px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text3);
+    margin-top: 16px;
+  }
+
+  .version-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">&#x229E;</div>
+      <div>
+        <div class="logo-name">Eigenframe</div>
+        <div class="logo-sub">Help and FAQ</div>
+      </div>
+    </div>
+
+    <span class="nav-section-label">Getting Started</span>
+    <a class="nav-link" href="#installation">Installation</a>
+    <a class="nav-link" href="#first-launch">First Launch</a>
+    <a class="nav-link" href="#assigning">Assigning Scenes</a>
+
+    <span class="nav-section-label">Using the App</span>
+    <a class="nav-link" href="#formats">Supported Formats</a>
+    <a class="nav-link" href="#performance">Performance</a>
+    <a class="nav-link" href="#shortcuts">Keyboard Shortcuts</a>
+    <a class="nav-link" href="#menu-bar">Menu Bar</a>
+
+    <span class="nav-section-label">Troubleshooting</span>
+    <a class="nav-link" href="#faq">FAQ</a>
+    <a class="nav-link" href="#example-media">Example Media</a>
+    <a class="nav-link" href="#re-encoding">Re-encoding Videos</a>
+    <a class="nav-link" href="#known-issues">Known Issues</a>
+    <span class="nav-section-label">Legal</span>
+    <a class="nav-link" href="#disclaimer">Disclaimer</a>
+  </nav>
+
+  <main class="main">
+
+    <div class="hero">
+      <div class="hero-eyebrow">Documentation v1.0</div>
+      <h1>Eigenframe<br>Help and FAQ</h1>
+      <p>Assign any static or dynamic scene to each of your Mission Control Spaces. Images, GIFs, and videos all supported.</p>
+
+      <div class="origin-block">
+        In 1957, physicist Hugh Everett proposed that reality branches constantly into parallel coexisting universes, each one its own distinct and independent world. Eigenframe takes its name from that idea and applies it to your desktop. Each Space gets its own scene, still or moving, running quietly behind your work.
+      </div>
+
+      <div class="version-badge">
+        <div class="version-dot"></div>
+        Version 1.0 &nbsp;·&nbsp; macOS 13+ &nbsp;·&nbsp; Apple Silicon
+      </div>
+    </div>
+
+    <!-- Installation -->
+    <section class="section" id="installation">
+      <div class="section-header">
+        <div class="section-icon icon-cyan">&#x2193;</div>
+        <h2>Installation</h2>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Open the DMG</div>
+            <div class="step-body">Double-click <code>Eigenframe.dmg</code>. A Finder window opens showing the app and an Applications shortcut.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Drag to Applications</div>
+            <div class="step-body">Drag the Eigenframe icon onto the Applications folder shortcut in the same window. Wait for the copy to complete.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Launch the app</div>
+            <div class="step-body">Open Launchpad or Spotlight and launch Eigenframe. Because it is not from the App Store, macOS may warn you the first time. Right-click the app and choose Open to proceed. The app will not appear in the Dock as it lives in the menu bar.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <div class="step-title">Optional: enable Pause while typing</div>
+            <div class="step-body">If you want video wallpapers to pause automatically while you type, enable the <strong>Pause while typing</strong> toggle in the control panel footer. macOS will prompt for Input Monitoring permission. Grant it in <strong>System Settings &rarr; Privacy &amp; Security &rarr; Input Monitoring</strong>. This feature is entirely optional.</div>
+          </div>
+        </div>
+      </div>
+      <div class="callout callout-info" style="margin-top:20px">
+        <span class="callout-icon">&#x2139;</span>
+        <span>Eigenframe does not require Accessibility permission. Space detection uses <code>CGSGetActiveSpace</code>, a stable private system API that needs no special permission. Input Monitoring is only needed for the optional pause-while-typing feature.</span>
+      </div>
+    </section>
+
+    <!-- First Launch -->
+    <section class="section" id="first-launch">
+      <div class="section-header">
+        <div class="section-icon icon-cyan">&#x25CE;</div>
+        <h2>First Launch</h2>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Create your Spaces first</div>
+            <div class="step-body">Swipe up with three fingers or press <kbd>F3</kbd> to open Mission Control, then click the + button in the top-right corner to add Spaces.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Open the control panel</div>
+            <div class="step-body">Click the &#x229E; icon in your menu bar and choose <strong>Configure Spaces...</strong> The control panel opens showing a card for every Space you have created.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Assign scenes</div>
+            <div class="step-body">Drag any supported image or video file onto a Space card, or right-click a card and choose a file from the picker. The card shows a thumbnail preview once a scene is assigned.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Assigning Scenes -->
+    <section class="section" id="assigning">
+      <div class="section-header">
+        <div class="section-icon icon-purple">&#x25B6;</div>
+        <h2>Assigning Scenes</h2>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">&rarr;</div>
+          <div class="step-content">
+            <div class="step-title">Drag and drop</div>
+            <div class="step-body">Drag any supported image or video directly from Finder onto a Space card. The change takes effect immediately.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">&rarr;</div>
+          <div class="step-content">
+            <div class="step-title">File picker</div>
+            <div class="step-body">Right-click any Space card and choose <strong>Choose Scene...</strong> or <strong>Choose Different Scene...</strong> to open a standard file browser.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">&rarr;</div>
+          <div class="step-content">
+            <div class="step-title">Remove a scene</div>
+            <div class="step-body">Right-click a card that has a scene assigned and choose <strong>Remove Scene</strong>. That Space will revert to your standard macOS wallpaper.</div>
+          </div>
+        </div>
+      </div>
+      <div class="callout callout-success" style="margin-top:20px">
+        <span class="callout-icon">&#x2713;</span>
+        <span>Assignments are saved automatically and restored every time the app launches. You only need to set them up once.</span>
+      </div>
+    </section>
+
+    <!-- Supported Formats -->
+    <section class="section" id="formats">
+      <div class="section-header">
+        <div class="section-icon icon-cyan">&#x25A4;</div>
+        <h2>Supported Formats</h2>
+      </div>
+      <div class="format-grid">
+        <div class="format-card">
+          <div class="format-card-title">Static Images</div>
+          <div class="format-list">
+            JPEG / JPG<br>
+            PNG<br>
+            HEIC / HEIF<br>
+            GIF<br>
+            WebP<br>
+            TIFF / TIF<br>
+            BMP
+          </div>
+        </div>
+        <div class="format-card">
+          <div class="format-card-title">Video</div>
+          <div class="format-list">
+            MP4<br>
+            MOV<br>
+            M4V<br>
+            MKV<br>
+            AVI<br>
+            WebM<br>
+            HEVC / H.265<br>
+            3GP
+          </div>
+        </div>
+      </div>
+      <div class="callout callout-info" style="margin-top:16px">
+        <span class="callout-icon">&#x2139;</span>
+        <span>All video wallpapers are muted. Audio tracks are ignored entirely.</span>
+      </div>
+    </section>
+
+    <!-- Performance -->
+    <section class="section" id="performance">
+      <div class="section-header">
+        <div class="section-icon icon-orange">&#x26A1;</div>
+        <h2>Performance</h2>
+      </div>
+
+      <p style="color: var(--text2); margin-bottom: 16px;">Short clips under a few minutes at 1080p or lower will give the smoothest experience regardless of format. Very large files, high resolutions, or multiple simultaneous videos may increase GPU and CPU usage, affect battery life, and cause delayed startup or occasional dropped frames.</p>
+
+      <div class="callout callout-warn">
+        <span class="callout-icon">&#x26A0;</span>
+        <div>If you notice performance issues, consider re-encoding your video to a shorter, more compressed version before assigning it. See the Re-encoding section below for free tools and commands.</div>
+      </div>
+
+      <div class="steps" style="margin-top: 16px;">
+        <div class="step">
+          <div class="step-num">&rarr;</div>
+          <div class="step-content">
+            <div class="step-title">Resolution matters most</div>
+            <div class="step-body">A 4K video uses far more GPU resources than a 1080p video of the same length. If your source is 4K, scaling it down before assigning it makes a significant difference.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">&rarr;</div>
+          <div class="step-content">
+            <div class="step-title">Codec matters too</div>
+            <div class="step-body">H.264 and HEVC are hardware decoded on M1 and later chips, using minimal resources. Other codecs may fall back to software decoding which uses more CPU.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">&rarr;</div>
+          <div class="step-content">
+            <div class="step-title">Multiple Spaces multiply the load</div>
+            <div class="step-body">Each Space with a video assigned runs its own decode process. Four Spaces with four videos is four simultaneous operations. On laptops, consider using Pause from the menu bar during intensive work.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Keyboard Shortcuts -->
+    <section class="section" id="shortcuts">
+      <div class="section-header">
+        <div class="section-icon icon-cyan">&#x2328;</div>
+        <h2>Keyboard Shortcuts</h2>
+      </div>
+      <table class="shortcuts-table">
+        <tr>
+          <td>Open Configure Spaces</td>
+          <td><kbd>&#x2318;</kbd> <kbd>,</kbd></td>
+        </tr>
+        <tr>
+          <td>Pause / Resume wallpapers</td>
+          <td><kbd>&#x2318;</kbd> <kbd>P</kbd></td>
+        </tr>
+        <tr>
+          <td>Open Help and FAQ</td>
+          <td><kbd>&#x2318;</kbd> <kbd>?</kbd></td>
+        </tr>
+        <tr>
+          <td>Quit Eigenframe</td>
+          <td><kbd>&#x2318;</kbd> <kbd>Q</kbd></td>
+        </tr>
+      </table>
+    </section>
+
+    <!-- Menu Bar -->
+    <section class="section" id="menu-bar">
+      <div class="section-header">
+        <div class="section-icon icon-purple">&#x229E;</div>
+        <h2>Menu Bar</h2>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">&rarr;</div>
+          <div class="step-content">
+            <div class="step-title">Configure Spaces...</div>
+            <div class="step-body">Opens the main control panel where you assign scenes to each Space.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">&rarr;</div>
+          <div class="step-content">
+            <div class="step-title">Pause / Resume Wallpapers</div>
+            <div class="step-body">Temporarily stops all video playback without quitting the app. Useful during intensive tasks or to extend battery life. Press <kbd>&#x2318;P</kbd> to toggle.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">&rarr;</div>
+          <div class="step-content">
+            <div class="step-title">Help and FAQ</div>
+            <div class="step-body">Opens this document in your default browser.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">&rarr;</div>
+          <div class="step-content">
+            <div class="step-title">Quit Eigenframe</div>
+            <div class="step-body">Stops all wallpapers and exits. Your standard macOS wallpaper settings are restored automatically.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" id="faq">
+      <div class="section-header">
+        <div class="section-icon icon-orange">?</div>
+        <h2>Frequently Asked Questions</h2>
+      </div>
+      <div class="faq-list">
+
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            What permissions does Eigenframe need?
+            <span class="faq-chevron">&#x25BC;</span>
+          </button>
+          <div class="faq-answer">
+            Eigenframe needs no special permissions to run. Space detection works out of the box with no setup required.<br><br>
+            The only permission you may ever see is <strong>Input Monitoring</strong>, and only if you choose to enable the Pause while typing toggle in the control panel footer. When you enable it, macOS will prompt you automatically. Grant access in the dialog, or open <strong>System Settings &rarr; Privacy &amp; Security &rarr; Input Monitoring</strong> and enable Eigenframe there. If you never use pause while typing, no permissions are needed at all.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            My wallpaper appears on top of windows instead of behind them.
+            <span class="faq-chevron">&#x25BC;</span>
+          </button>
+          <div class="faq-answer">
+            This happens occasionally when macOS reshuffles window layers, most often after waking from sleep or a display configuration change. Quitting and relaunching Eigenframe fixes it. If it happens repeatedly, check whether another wallpaper app is running at the same time and conflicting.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            My Spaces are not showing up in the control panel.
+            <span class="faq-chevron">&#x25BC;</span>
+          </button>
+          <div class="faq-answer">
+            Click <strong>Refresh</strong> at the bottom-right of the control panel. Spaces added after the app launched require a manual refresh. If Spaces still do not appear, quit and relaunch the app.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            My video file is not playing.
+            <span class="faq-chevron">&#x25BC;</span>
+          </button>
+          <div class="faq-answer">
+            Eigenframe uses macOS AVFoundation for playback, which supports most common formats. If your file does not play, re-encode it with HandBrake or ffmpeg. See the Re-encoding section below for specific commands.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            Pause while typing is not working.
+            <span class="faq-chevron">&#x25BC;</span>
+          </button>
+          <div class="faq-answer">
+            This feature requires Input Monitoring permission. Go to <strong>System Settings &rarr; Privacy &amp; Security &rarr; Input Monitoring</strong> and confirm Eigenframe is listed and enabled. If it is not listed, enable the Pause while typing toggle in the app — this triggers the permission request. If you rebuild the app from source, you must use a stable signing certificate (see the README) otherwise the permission grant will not persist across builds.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            Does this drain my battery?
+            <span class="faq-chevron">&#x25BC;</span>
+          </button>
+          <div class="faq-answer">
+            Video wallpapers do use GPU resources. On M1 and later chips macOS hardware-decodes H.264 and HEVC efficiently, so the impact is small in normal use. For extended battery-critical work, use Pause from the menu bar to stop playback without quitting the app.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            How do I make Eigenframe launch at login?
+            <span class="faq-chevron">&#x25BC;</span>
+          </button>
+          <div class="faq-answer">
+            Go to <strong>System Settings &rarr; General &rarr; Login Items</strong>, click +, and add Eigenframe from your Applications folder. It will launch silently in the menu bar at every login.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            Where are my assignments stored?
+            <span class="faq-chevron">&#x25BC;</span>
+          </button>
+          <div class="faq-answer">
+            Assignments are saved as a JSON file at:
+            <pre><code>~/Library/Application Support/Eigenframe/assignments.json</code></pre>
+            You can back this file up, or delete it to reset all assignments.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            Will a macOS update break the app?
+            <span class="faq-chevron">&#x25BC;</span>
+          </button>
+          <div class="faq-answer">
+            Space detection uses <code>CGSGetActiveSpace</code>, a private API stable since macOS Mojave in 2018. It is used by many popular apps and is very unlikely to be removed. In the event of a future breakage the app will still run but wallpapers will not switch between Spaces until an update is released.
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Example Media -->
+    <section class="section" id="example-media">
+      <div class="section-header">
+        <div class="section-icon icon-cyan">&#x2605;</div>
+        <h2>Example Media</h2>
+      </div>
+
+      <p style="color: var(--text2); margin-bottom: 20px;">The following are freely available images and videos from NASA and ESA that work well as Space wallpapers. All are in the public domain and provided for educational and non-commercial use. Credit is required where indicated.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">&rarr;</div>
+          <div class="step-content">
+            <div class="step-title">Cosmic Tornado — Herbig-Haro 49/50 (video)</div>
+            <div class="step-body">
+              A James Webb Space Telescope visualization flying through the Herbig-Haro 49/50 protostellar outflow, 630 light-years from Earth.<br>
+              Credit: NASA, ESA, CSA, STScI<br>
+              <a href="https://esawebb.org/news/weic2506/" style="color: var(--cyan);" target="_blank">Download from ESA Webb</a>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">&rarr;</div>
+          <div class="step-content">
+            <div class="step-title">Black Hole Accretion Disk (image / video)</div>
+            <div class="step-body">
+              NASA Goddard Space Flight Center visualization of light bending around a spinning black hole and its accretion disk.<br>
+              Credit: NASA&apos;s Goddard Space Flight Center / Jeremy Schnittman<br>
+              <a href="https://svs.gsfc.nasa.gov/13326/" style="color: var(--cyan);" target="_blank">Download from NASA SVS</a>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">&rarr;</div>
+          <div class="step-content">
+            <div class="step-title">More NASA imagery</div>
+            <div class="step-body">
+              NASA&apos;s Scientific Visualization Studio hosts hundreds of freely available space visualizations suitable for use as wallpapers.<br>
+              <a href="https://svs.gsfc.nasa.gov" style="color: var(--cyan);" target="_blank">Browse NASA SVS</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-info" style="margin-top: 16px;">
+        <span class="callout-icon">&#x2139;</span>
+        <span>NASA media is generally in the public domain for non-commercial use. Always check the specific credit and usage terms on each page before redistributing.</span>
+      </div>
+    </section>
+
+    <!-- Re-encoding -->
+    <section class="section" id="re-encoding">
+      <div class="section-header">
+        <div class="section-icon icon-green">&#x21BB;</div>
+        <h2>Re-encoding Videos</h2>
+      </div>
+
+      <p style="color: var(--text2); margin-bottom: 20px;">If your video is large, slow to load, or causing performance issues, re-encoding it before assigning it makes a significant difference. Two free tools make this straightforward.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">&rarr;</div>
+          <div class="step-content">
+            <div class="step-title">HandBrake (easiest)</div>
+            <div class="step-body">Free, open source, drag and drop. Download from <code>handbrake.fr</code>. Use the preset <strong>H.264 MKV 1080p30</strong> or <strong>H.265 MKV 1080p30</strong> for the best results. Enable the Audio tab and remove all audio tracks before encoding.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">&rarr;</div>
+          <div class="step-content">
+            <div class="step-title">ffmpeg (command line)</div>
+            <div class="step-body">Install via Homebrew: <code>brew install ffmpeg</code>. Then use any of the commands below. The <code>-an</code> flag removes audio in all cases, keeping file sizes smaller since Eigenframe mutes all wallpapers anyway.</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 20px;">
+        <p style="color: var(--text2); font-size: 13.5px; margin-bottom: 10px;">Re-encode to H.264 1080p:</p>
+        <pre><code>ffmpeg -i input.mov -c:v libx264 -crf 18 -vf scale=1920:1080 -an output.mp4</code></pre>
+
+        <p style="color: var(--text2); font-size: 13.5px; margin-bottom: 10px; margin-top: 16px;">Re-encode to HEVC for smaller file size:</p>
+        <pre><code>ffmpeg -i input.mov -c:v libx265 -crf 28 -an output.mp4</code></pre>
+
+        <p style="color: var(--text2); font-size: 13.5px; margin-bottom: 10px; margin-top: 16px;">Trim to 30 seconds and compress:</p>
+        <pre><code>ffmpeg -i input.mov -c:v libx264 -crf 18 -t 30 -an output.mp4</code></pre>
+
+        <p style="color: var(--text2); font-size: 13.5px; margin-bottom: 10px; margin-top: 16px;">Scale down 4K to 1080p:</p>
+        <pre><code>ffmpeg -i input_4k.mp4 -c:v libx264 -crf 18 -vf scale=1920:1080 -an output.mp4</code></pre>
+
+        <p style="color: var(--text2); font-size: 13.5px; margin-bottom: 10px; margin-top: 16px;">Remove audio only, keep original quality:</p>
+        <pre><code>ffmpeg -i input.mp4 -c:v copy -an output.mp4</code></pre>
+      </div>
+
+      <div class="callout callout-info" style="margin-top: 16px;">
+        <span class="callout-icon">&#x2139;</span>
+        <span>A lower <code>-crf</code> value means higher quality and larger file size. 18 is near-lossless. 28 is efficient with small visible quality reduction. For wallpaper use, 23 to 28 is usually indistinguishable from the original at normal viewing distance.</span>
+      </div>
+    </section>
+
+    <!-- Known Issues -->
+    <section class="section" id="known-issues">
+      <div class="section-header">
+        <div class="section-icon icon-orange">!</div>
+        <h2>Known Issues</h2>
+      </div>
+
+      <div class="callout callout-warn">
+        <span class="callout-icon">&#x26A0;</span>
+        <div><strong>Window level after sleep</strong> - The wallpaper window may reappear on top of other windows after the display wakes from sleep. Quitting and relaunching fixes this.</div>
+      </div>
+
+      <div class="callout callout-warn" style="margin-top:10px">
+        <span class="callout-icon">&#x26A0;</span>
+        <div><strong>New Spaces added at runtime</strong> - Spaces created after the app launches are not automatically detected. Click Refresh Spaces in the control panel after adding a new Space.</div>
+      </div>
+
+      <div class="callout callout-warn" style="margin-top:10px">
+        <span class="callout-icon">&#x26A0;</span>
+        <div><strong>Gatekeeper warning on first launch</strong> — Because Eigenframe is not distributed through the Mac App Store, macOS will show a security warning the first time you open it. Right-click the app and choose Open, or go to System Settings &rarr; Privacy &amp; Security and click Open Anyway.</div>
+      </div>
+
+      <div class="callout callout-warn" style="margin-top:10px">
+        <span class="callout-icon">&#x26A0;</span>
+        <div><strong>Wallpaper transition delay</strong> — There is a brief delay when switching Spaces before the wallpaper appears. This is a macOS compositor constraint. Using short, hardware-decoded video files (H.264 or HEVC) reduces the delay.</div>
+      </div>
+
+      <div class="callout callout-warn" style="margin-top:10px">
+        <span class="callout-icon">&#x26A0;</span>
+        <div><strong>Input Monitoring permission after rebuilding</strong> — If you build from source and use ad-hoc signing, the Input Monitoring permission will not persist across rebuilds. Use a self-signed certificate named <code>Eigenframe Dev</code> as described in the README to keep the permission stable.</div>
+      </div>
+    </section>
+
+
+    <!-- Disclaimer -->
+    <section class="section" id="disclaimer">
+      <div class="section-header">
+        <div class="section-icon icon-orange">&#x00A9;</div>
+        <h2>Disclaimer and License</h2>
+      </div>
+
+      <div class="callout callout-warn">
+        <span class="callout-icon">&#x26A0;</span>
+        <div>The software is provided as-is, without warranty of any kind, express or implied. By using Eigenframe you accept all risks associated with its use. The authors accept no responsibility for data loss, system instability, unexpected behavior following a macOS update, or any other issues arising from its use.</div>
+      </div>
+
+      <div class="steps" style="margin-top: 16px;">
+        <div class="step">
+          <div class="step-num">&rarr;</div>
+          <div class="step-content">
+            <div class="step-title">Private API usage</div>
+            <div class="step-body">Eigenframe uses <code>CGSGetActiveSpace</code> and <code>CGSCopyManagedDisplaySpaces</code>, which are private undocumented macOS APIs. These APIs have been stable since macOS Mojave in 2018. Apple may change or remove them in a future release without notice, which would cause Space detection to stop working until an update is released.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">&rarr;</div>
+          <div class="step-content">
+            <div class="step-title">No affiliation with Apple</div>
+            <div class="step-body">This is an independent open source project with no affiliation with Apple Inc. macOS, Mission Control, and Spaces are trademarks of Apple Inc.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">&rarr;</div>
+          <div class="step-content">
+            <div class="step-title">License</div>
+            <div class="step-body">Copyright &copy; 2026 Abhik Roy. Released under the MIT License. You are free to use, modify, and distribute this software provided the original copyright notice is retained. Source code is available at <code>github.com/drabhikroy/Eigenframe</code>.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+function toggleFaq(btn) {
+  const item = btn.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+const sections = document.querySelectorAll('.section');
+const navLinks = document.querySelectorAll('.nav-link');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
+      });
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

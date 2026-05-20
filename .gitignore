@@ -1,0 +1,39 @@
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Xcode
+*.xcodeproj/
+xcuserdata/
+*.xccheckout
+*.xcscmblueprint
+DerivedData/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Build artifacts
+*.o
+*.d
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Installer artifacts
+Installer/*.dmg
+Installer/dmg-contents/*.app
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Icon source
+Installer/icon_source.svg
