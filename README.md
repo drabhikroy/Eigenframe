@@ -10,7 +10,8 @@ Assign any image or video to each of your Mission Control Spaces. Changes take e
 
 ![Eigenframe — Space 1 showing Herbig-Haro nebula wallpaper](docs/screenshot2.png)
 
-https://github.com/user-attachments/assets/9efd065b-4f84-4e87-8976-bcfc51f52826
+<video src="https://github.com/user-attachments/assets/9efd065b-4f84-4e87-8976-bcfc51f52826" controls="controls" width="100%">
+</video>
 
 ## Requirements
 
