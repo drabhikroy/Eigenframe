@@ -6,6 +6,8 @@ Assign any image or video to each of your Mission Control Spaces. Changes take e
 
 ![macOS](https://img.shields.io/badge/macOS-13%2B-blue) ![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-M1%2B-blue) ![License](https://img.shields.io/badge/license-MIT-green)
 
+https://github.com/drabhikroy/Eigenframe/raw/main/docs/demo.mp4
+
 ![Eigenframe — Space 2 showing black hole accretion disk wallpaper](docs/screenshot.png)
 
 ![Eigenframe — Space 1 showing Herbig-Haro nebula wallpaper](docs/screenshot2.png)
@@ -110,8 +112,10 @@ Open `Help/Eigenframe_Help.html` in any browser, or launch the app and choose **
 
 The wallpapers shown in the screenshots are NASA/ESA public domain imagery.
 
-- **Black hole accretion disk** — NASA's Goddard Space Flight Center / Jeremy Schnittman. [Source](https://svs.gsfc.nasa.gov/13326/)
-- **Herbig-Haro 49/50 (Cosmic Tornado)** — NASA, ESA, CSA, STScI. James Webb Space Telescope. [Source](https://esawebb.org/news/weic2506/)
+- **Black Hole Accretion Disk Visualization** — NASA's Goddard Space Flight Center / Jeremy Schnittman. [Source](https://svs.gsfc.nasa.gov/14146/)
+- **Flow through Cosmic Tornado — Herbig-Haro 49/50** — ESA/Webb, NASA, CSA, STScI. [Source](https://www.esa.int/ESA_Multimedia/Videos/2025/03/Flow_through_Cosmic_Tornado_Herbig-Haro_49_50)
+
+Both files are included in `docs/examples/` with a full credits file. See [docs/examples/CREDITS.md](docs/examples/CREDITS.md).
 
 ## Disclaimer
 
