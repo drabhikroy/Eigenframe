@@ -5,6 +5,11 @@ All notable changes to Eigenframe are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Eigenframe uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-05-29
+
+### Added
+- Launch at login option in the control panel footer. Uses `SMAppService.mainApp` — no helper process required. The setting persists across launches.
+
 ## [1.0.0] - 2026-05-20
 
 ### Added

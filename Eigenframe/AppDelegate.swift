@@ -4,6 +4,10 @@ import OSLog
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
 
+    // nonisolated(unsafe) is required because AppDelegate is an NSObject subclass
+    // and Swift 6 strict concurrency does not allow stored properties to be
+    // implicitly isolated to @MainActor on non-final reference types. These
+    // properties are only ever accessed from the main thread via @MainActor methods.
     private nonisolated(unsafe) var statusItem: NSStatusItem?
     private nonisolated(unsafe) var controlPanelWindow: NSWindow?
     private nonisolated(unsafe) var wallpaperEngine: WallpaperEngine?
@@ -74,9 +78,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Actions
 
     @MainActor @objc private func showControlPanel() {
-        // If the window was closed (isReleasedWhenClosed = false means the
-        // object still exists but is not visible), recreate it so it always
-        // appears fresh at its last position or centered if first launch.
+        // Recreate if closed; restore last position or center on first launch.
         if controlPanelWindow == nil || !(controlPanelWindow?.isVisible ?? false) {
             guard let engine = wallpaperEngine else { return }
 
@@ -92,8 +94,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             window.isReleasedWhenClosed        = false
             window.minSize                     = NSSize(width: 520, height: 420)
 
-            // Follow the user across Spaces so the control panel
-            // is always accessible regardless of which Space is active.
+            // Follow the user across Spaces.
             window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
             if let existing = controlPanelWindow {

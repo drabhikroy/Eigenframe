@@ -1,4 +1,5 @@
 import Foundation
+import ServiceManagement
 import OSLog
 
 // MARK: - Assignment
@@ -20,7 +21,8 @@ struct Assignment: Codable, Equatable {
 private struct PersistedStore: Codable {
     var version:      Int          = 1
     var assignments:  [Assignment] = []
-    var pauseOnTyping: Bool        = false
+    var pauseOnTyping:  Bool        = false
+    var launchAtLogin:  Bool        = false
 }
 
 // MARK: - ConfigStore
@@ -33,6 +35,21 @@ final class ConfigStore: ObservableObject {
     @Published private(set) var assignments: [Assignment] = []
     @Published var pauseOnTyping: Bool = false {
         didSet { save() }
+    }
+
+    @Published var launchAtLogin: Bool = false {
+        didSet {
+            save()
+            do {
+                if launchAtLogin {
+                    try SMAppService.mainApp.register()
+                } else {
+                    try SMAppService.mainApp.unregister()
+                }
+            } catch {
+                Log.store.error("Failed to update launch at login: \(error)")
+            }
+        }
     }
 
     private let storeURL: URL
@@ -95,7 +112,7 @@ final class ConfigStore: ObservableObject {
 
     private func save() {
         do {
-            let data = try encoder.encode(PersistedStore(version: 1, assignments: assignments, pauseOnTyping: pauseOnTyping))
+            let data = try encoder.encode(PersistedStore(version: 1, assignments: assignments, pauseOnTyping: pauseOnTyping, launchAtLogin: launchAtLogin))
             try data.write(to: storeURL, options: .atomic)
         } catch {
             Log.config.error("Failed to save: \(error.localizedDescription)")
@@ -114,7 +131,8 @@ final class ConfigStore: ObservableObject {
             // on external drives, network shares, or iCloud and temporarily unavailable.
             // The engine will log an error if a file cannot be opened at render time.
             assignments   = store.assignments
-            pauseOnTyping = store.pauseOnTyping
+            pauseOnTyping  = store.pauseOnTyping
+            launchAtLogin  = store.launchAtLogin
             Log.config.info("Loaded \(self.assignments.count) valid assignment(s)")
         } catch {
             Log.config.error("Failed to load assignments: \(error.localizedDescription)")
