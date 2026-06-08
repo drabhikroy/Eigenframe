@@ -6,7 +6,7 @@ Assign any image or video to each of your Mission Control Spaces. Changes take e
 
 ![macOS](https://img.shields.io/badge/macOS-13%2B-blue) ![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-M1%2B-blue) ![License](https://img.shields.io/badge/license-MIT-green)
 
-https://github.com/drabhikroy/Eigenframe/raw/main/docs/demo.mp4
+[![Demo Video](docs/thumbnail.png)](https://github.com/drabhikroy/Eigenframe/raw/main/docs/demo.mp4)
 
 ![Eigenframe — Space 2 showing black hole accretion disk wallpaper](docs/screenshot.png)
 
