@@ -5,6 +5,15 @@ All notable changes to Eigenframe are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Eigenframe uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-06-07
+
+### Added
+- Resizable control panel window with a minimum size of 520×420. Space cards reflow automatically as the window is resized.
+
+### Fixed
+- Footer toggles no longer clip at narrow window widths.
+- `setupEventTap` and `handleTypingEvent` correctly scoped as private; `requestTypingDetection` is the public entry point.
+
 ## [1.1.0] - 2026-05-29
 
 ### Added
