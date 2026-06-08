@@ -6,11 +6,11 @@ Assign any image or video to each of your Mission Control Spaces. Changes take e
 
 ![macOS](https://img.shields.io/badge/macOS-13%2B-blue) ![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-M1%2B-blue) ![License](https://img.shields.io/badge/license-MIT-green)
 
-https://github.com/user-attachments/assets/9f1907e6-ce1e-484a-8fbf-287a6962f8af
-
 ![Eigenframe — Space 2 showing black hole accretion disk wallpaper](docs/screenshot.png)
 
 ![Eigenframe — Space 1 showing Herbig-Haro nebula wallpaper](docs/screenshot2.png)
+
+https://github.com/user-attachments/assets/9f1907e6-ce1e-484a-8fbf-287a6962f8af
 
 ## Requirements
 
