@@ -40,7 +40,7 @@ struct ControlPanelView: View {
                     .padding(.bottom, 24)
             }
         }
-        .frame(width: 720, height: 540)
+        .frame(minWidth: 520, minHeight: 420)
         .preferredColorScheme(.dark)
     }
 
@@ -182,6 +182,7 @@ struct ControlPanelView: View {
             }
             .toggleStyle(.switch)
             .controlSize(.mini)
+            .fixedSize()
             .help("Pause video wallpapers while you are typing. Requires Input Monitoring permission.")
 
             Toggle(isOn: Binding(
@@ -194,6 +195,7 @@ struct ControlPanelView: View {
             }
             .toggleStyle(.switch)
             .controlSize(.mini)
+            .fixedSize()
             .help("Start Eigenframe automatically when you log in")
 
             Button("Refresh") {

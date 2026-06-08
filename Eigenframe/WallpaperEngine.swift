@@ -92,7 +92,7 @@ final class WallpaperEngine: ObservableObject {
         setupEventTap()
     }
 
-    func setupEventTap() {
+    private func setupEventTap() {
         let selfPtr = Unmanaged.passUnretained(self).toOpaque()
 
         guard let tap = CGEvent.tapCreate(
@@ -136,7 +136,7 @@ final class WallpaperEngine: ObservableObject {
         }
     }
 
-    func handleTypingEvent() {
+    private func handleTypingEvent() {
         guard config.pauseOnTyping, !isPaused else { return }
         if !isTypingPaused {
             isTypingPaused = true

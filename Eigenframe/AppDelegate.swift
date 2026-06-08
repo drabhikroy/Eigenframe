@@ -1,4 +1,5 @@
 import Cocoa
+import ServiceManagement
 import SwiftUI
 import OSLog
 
@@ -68,6 +69,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Pause Wallpapers", action: #selector(togglePause), keyEquivalent: "p"))
         menu.addItem(.separator())
+
+        let loginItem = NSMenuItem(title: "Launch at Login", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
+        loginItem.state = SMAppService.mainApp.status == .enabled ? NSControl.StateValue.on : NSControl.StateValue.off
+        menu.addItem(loginItem)
+        menu.addItem(.separator())
+
         menu.addItem(NSMenuItem(title: "Help and FAQ", action: #selector(openHelp), keyEquivalent: "?"))
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Quit Eigenframe", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
@@ -112,6 +119,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         controlPanelWindow?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
         Log.ui.debug("Control panel shown")
+    }
+
+    @MainActor @objc private func toggleLaunchAtLogin() {
+        ConfigStore.shared.launchAtLogin.toggle()
+        let isEnabled = SMAppService.mainApp.status == .enabled
+        statusItem?.menu?.item(withTitle: "Launch at Login")?.state = isEnabled ? .on : .off
     }
 
     @MainActor @objc private func openHelp() {

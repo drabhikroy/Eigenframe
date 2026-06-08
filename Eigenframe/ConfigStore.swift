@@ -43,11 +43,17 @@ final class ConfigStore: ObservableObject {
             do {
                 if launchAtLogin {
                     try SMAppService.mainApp.register()
+                    Log.config.info("Launch at login registered — status: \(SMAppService.mainApp.status.rawValue)")
                 } else {
                     try SMAppService.mainApp.unregister()
+                    Log.config.info("Launch at login unregistered")
                 }
             } catch {
-                Log.store.error("Failed to update launch at login: \(error)")
+                Log.config.error("SMAppService failed: \(error.localizedDescription)")
+                // Roll back the toggle if registration failed
+                DispatchQueue.main.async {
+                    self.launchAtLogin = !self.launchAtLogin
+                }
             }
         }
     }
@@ -132,7 +138,11 @@ final class ConfigStore: ObservableObject {
             // The engine will log an error if a file cannot be opened at render time.
             assignments   = store.assignments
             pauseOnTyping  = store.pauseOnTyping
-            launchAtLogin  = store.launchAtLogin
+            // Sync with actual SMAppService registration status rather than
+            // the saved preference — the user may have changed it in System Settings.
+            let actualStatus = SMAppService.mainApp.status
+            launchAtLogin = (actualStatus == .enabled)
+            Log.config.info("Launch at login status on load: \(actualStatus.rawValue)")
             Log.config.info("Loaded \(self.assignments.count) valid assignment(s)")
         } catch {
             Log.config.error("Failed to load assignments: \(error.localizedDescription)")
