@@ -5,6 +5,11 @@ All notable changes to Eigenframe are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Eigenframe uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-06-07
+
+### Added
+- About Eigenframe panel accessible from the menu bar icon, showing the version number, app icon, and GitHub link.
+
 ## [1.2.0] - 2026-06-07
 
 ### Added

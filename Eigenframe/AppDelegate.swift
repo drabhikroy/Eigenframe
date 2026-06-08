@@ -65,6 +65,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let menu = NSMenu()
+        menu.addItem(NSMenuItem(title: "About Eigenframe", action: #selector(showAbout), keyEquivalent: ""))
+        menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Configure Spaces...", action: #selector(showControlPanel), keyEquivalent: ","))
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Pause Wallpapers", action: #selector(togglePause), keyEquivalent: "p"))
@@ -119,6 +121,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         controlPanelWindow?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
         Log.ui.debug("Control panel shown")
+    }
+
+    @MainActor @objc private func showAbout() {
+        NSApp.activate(ignoringOtherApps: true)
+        NSApp.orderFrontStandardAboutPanel(options: [
+            .applicationName:    "Eigenframe",
+            .applicationVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "",
+            .credits:            NSAttributedString(string: "Assign a unique scene to each Mission Control Space.\n\ngithub.com/drabhikroy/Eigenframe")
+        ])
     }
 
     @MainActor @objc private func toggleLaunchAtLogin() {
