@@ -46,3 +46,6 @@ Eigenframe uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Build script producing a signed DMG installer and auto-installing to /Applications
 - Full os_log structured logging across all subsystems
 - VoiceOver accessibility labels on all interactive elements
+
+### Notes
+- Licensed under the PolyForm Noncommercial License 1.0.0.
