@@ -129,4 +129,4 @@ This is an independent open source project with no affiliation with Apple Inc. m
 
 Copyright (c) 2026 Abhik Roy
 
-Released under the MIT License. See [LICENSE](LICENSE) for the full text.
+Released under the PolyForm Noncommercial License 1.0.0. See [LICENSE](LICENSE) for the full text.
