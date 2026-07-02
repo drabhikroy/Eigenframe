@@ -129,4 +129,8 @@ This is an independent open source project with no affiliation with Apple Inc. m
 
 Copyright (c) 2026 Abhik Roy
 
-Released under the PolyForm Noncommercial License 1.0.0. See [LICENSE](LICENSE) for the full text.
+PolyForm Noncommercial License 1.0.0. You are free to use, modify, and share
+the software for any noncommercial purpose, including research, teaching, and
+use by nonprofit and educational institutions. Commercial use is not granted.
+Please see the [LICENSE](LICENSE) file for the full terms and NOTICE for the required copyright
+notice.
