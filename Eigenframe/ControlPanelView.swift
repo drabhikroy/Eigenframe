@@ -10,7 +10,7 @@ struct ControlPanelView: View {
     @ObservedObject private var spaceManager = SpaceManager.shared
     @ObservedObject private var config       = ConfigStore.shared
 
-    @State private var hoveredSpace: CGSSpaceID? = nil
+    @State private var hoveredSpace: String? = nil
 
     var body: some View {
         ZStack {
@@ -114,18 +114,18 @@ struct ControlPanelView: View {
         let columns = [GridItem(.adaptive(minimum: 180, maximum: 280), spacing: 16)]
 
         return ScrollView {
-            if spaceManager.allSpaceIDs.isEmpty {
+            if spaceManager.spaces.isEmpty {
                 emptyStateView
             } else {
                 LazyVGrid(columns: columns, spacing: 16) {
-                    ForEach(spaceManager.allSpaceIDs, id: \.self) { spaceID in
+                    ForEach(spaceManager.spaces) { space in
                         SpaceSlotView(
-                            spaceID:    spaceID,
-                            spaceIndex: spaceManager.index(of: spaceID),
-                            isActive:   spaceManager.currentSpaceID == spaceID,
-                            isHovered:  hoveredSpace == spaceID
+                            spaceUUID:  space.uuid,
+                            spaceIndex: spaceManager.index(ofUUID: space.uuid),
+                            isActive:   spaceManager.currentSpaceUUID == space.uuid,
+                            isHovered:  hoveredSpace == space.uuid
                         )
-                        .onHover { hoveredSpace = $0 ? spaceID : nil }
+                        .onHover { hoveredSpace = $0 ? space.uuid : nil }
                     }
                 }
                 .padding(.bottom, 12)
@@ -203,7 +203,7 @@ struct ControlPanelView: View {
                 Log.ui.info("User refreshed spaces")
             }
             .buttonStyle(GhostButtonStyle())
-            .help("Reload your Space list after adding or removing Spaces in Mission Control")
+            .help("Force a reload of your Space list. Normally not needed — Eigenframe detects Space changes automatically.")
         }
     }
 }

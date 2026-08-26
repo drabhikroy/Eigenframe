@@ -37,3 +37,12 @@ Installer/dmg-contents/*.app
 
 # Icon source
 Installer/icon_source.svg
+
+# iCloud no-sync artifacts
+*.nosync
+
+# iCloud no-sync artifacts
+*.nosync
+
+# iCloud no-sync artifacts
+*.nosync

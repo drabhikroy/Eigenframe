@@ -5,8 +5,8 @@ import OSLog
 // MARK: - Space Slot Card
 
 struct SpaceSlotView: View {
-    let spaceID:    CGSSpaceID
-    let spaceIndex: Int
+    let spaceUUID:  String
+    let spaceIndex: Int      // 1-based display position only — never a storage key
     let isActive:   Bool
     let isHovered:  Bool
 
@@ -14,7 +14,7 @@ struct SpaceSlotView: View {
     // when assignments change — a plain `let mediaPath` prop would not
     // trigger a re-render when the store updates.
     @ObservedObject private var config = ConfigStore.shared
-    private var mediaPath: String? { config.mediaPath(forSpaceIndex: spaceIndex) }
+    private var mediaPath: String? { config.mediaPath(forSpaceUUID: spaceUUID) }
 
     @State private var isDroppingOver = false
     @State private var thumbnail:     NSImage?   = nil
@@ -153,7 +153,7 @@ struct SpaceSlotView: View {
             Button("Choose Different Scene...") { chooseFile() }
             Divider()
             Button("Remove Scene", role: .destructive) {
-                ConfigStore.shared.setMediaPath(nil, forSpaceIndex: spaceIndex)
+                ConfigStore.shared.setMediaPath(nil, forSpaceUUID: spaceUUID)
             }
         } else {
             Button("Choose Scene...") { chooseFile() }
@@ -198,8 +198,8 @@ struct SpaceSlotView: View {
     private func handleDrop(providers: [NSItemProvider]) -> Bool {
         guard let provider = providers.first else { return false }
 
-        // Capture spaceIndex before the async call.
-        let targetIndex = spaceIndex
+        // Capture the Space uuid before the async call.
+        let targetUUID = spaceUUID
 
         // The drop message arrives on the main thread via kDragIPCDrop.
         // We must return from handleDrop immediately — any work done here
@@ -247,8 +247,8 @@ struct SpaceSlotView: View {
                 // Dispatch the assignment back to main after the drop
                 // IPC transaction has fully completed.
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    ConfigStore.shared.setMediaPath(path, forSpaceIndex: targetIndex)
-                    Log.ui.info("Assigned space \(targetIndex) -> \(URL(fileURLWithPath: path).lastPathComponent)")
+                    ConfigStore.shared.setMediaPath(path, forSpaceUUID: targetUUID)
+                    Log.ui.info("Assigned space \(targetUUID) -> \(URL(fileURLWithPath: path).lastPathComponent)")
                 }
             }
         }
@@ -267,7 +267,7 @@ struct SpaceSlotView: View {
         panel.prompt                  = "Assign"
 
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        ConfigStore.shared.setMediaPath(url.path, forSpaceIndex: spaceIndex)
+        ConfigStore.shared.setMediaPath(url.path, forSpaceUUID: spaceUUID)
     }
 
     // MARK: - Thumbnail

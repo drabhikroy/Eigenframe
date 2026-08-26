@@ -16,11 +16,12 @@ final class WallpaperEngine: ObservableObject {
     private let spaceManager = SpaceManager.shared
     private let config       = ConfigStore.shared
 
-    // Keyed by space index (1-based) which is stable across reboots.
-    private var players:      [Int: AVQueuePlayer]  = [:]
-    private var loopers:      [Int: AVPlayerLooper] = [:]
-    private var windows:      [Int: NSWindow]       = [:]
-    private var activePaths:  [Int: String]         = [:]  // tracks what path each window is showing
+    // Keyed by the Space's persistent uuid — stable across reboots and across
+    // reordering Spaces in Mission Control, so a window stays bound to its desktop.
+    private var players:      [String: AVQueuePlayer]  = [:]
+    private var loopers:      [String: AVPlayerLooper] = [:]
+    private var windows:      [String: NSWindow]       = [:]
+    private var activePaths:  [String: String]         = [:]  // what path each window is showing
 
     private var cancellables    = Set<AnyCancellable>()
     private var isTypingPaused  = false
@@ -31,22 +32,24 @@ final class WallpaperEngine: ObservableObject {
     // MARK: - Lifecycle
 
     func start() {
-        // Wait for SpaceManager to settle before syncing, then react to
-        // both space changes and assignment changes.
-        spaceManager.$allSpaceIDs
+        // Wait for SpaceManager to settle, migrate any legacy index-keyed
+        // assignments to uuids using the current order, then sync.
+        spaceManager.$spaces
             .filter { !$0.isEmpty }
             .first()
             .receive(on: RunLoop.main)
-            .sink { [weak self] _ in
-                self?.syncToAssignments()
+            .sink { [weak self] spaces in
+                guard let self else { return }
+                self.config.migrateIndexAssignmentsIfNeeded(orderedUUIDs: spaces.map { $0.uuid })
+                self.syncToAssignments()
             }
             .store(in: &cancellables)
 
-        spaceManager.$currentSpaceID
+        spaceManager.$currentSpaceUUID
             .removeDuplicates()
             .receive(on: RunLoop.main)
-            .sink { [weak self] spaceID in
-                self?.handleSpaceChange(to: spaceID)
+            .sink { [weak self] uuid in
+                self?.handleSpaceChange(toUUID: uuid)
             }
             .store(in: &cancellables)
 
@@ -81,16 +84,36 @@ final class WallpaperEngine: ObservableObject {
         // CGEventTap in listen-only mode requires Input Monitoring permission.
         // Unlike NSEvent.addGlobalMonitorForEvents (which silently returns non-nil
         // but never fires), CGEventTap returns nil when permission is denied —
-        // giving us a reliable way to detect missing permission and alert the user.
+        // giving us a reliable way to detect missing permission.
+        //
+        // Only attempt this when the user actually wants pause-while-typing.
+        // Attempting it unconditionally meant users who never enable the feature
+        // were still nagged for a permission they don't need.
+        guard config.pauseOnTyping else {
+            Log.engine.info("Pause-on-typing disabled — skipping event tap setup")
+            return
+        }
         setupEventTap()
     }
 
-    /// Called by the UI when the user enables pause-while-typing for the first time.
+    /// Called by the UI when the user enables pause-while-typing.
     /// Attempts to install the event tap; shows the Input Monitoring alert if denied.
     func requestTypingDetection() {
         guard eventTap == nil else { return }
+        alertSuppressedForSession = false
+        tapAttempt = 0
         setupEventTap()
     }
+
+    /// Attempts made in the current retry cycle.
+    private var tapAttempt = 0
+
+    /// Set once the user dismisses the alert with "Later", so a single launch
+    /// never nags more than once.
+    private var alertSuppressedForSession = false
+
+    /// Number of times to retry before concluding permission is genuinely absent.
+    private static let maxTapAttempts = 5
 
     private func setupEventTap() {
         let selfPtr = Unmanaged.passUnretained(self).toOpaque()
@@ -109,10 +132,25 @@ final class WallpaperEngine: ObservableObject {
             },
             userInfo: selfPtr
         ) else {
-            // Tap returned nil = Input Monitoring permission not granted.
-            // Show an alert after a short delay so the app finishes launching first.
-            Log.engine.warning("CGEventTap nil — Input Monitoring permission not granted")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+            // A nil tap usually means permission is missing — but not always.
+            // TCC is not always ready in the first moments after launch, so a
+            // single early attempt can fail even when permission IS granted.
+            // Retry with backoff before concluding anything and alerting.
+            tapAttempt += 1
+
+            if tapAttempt < Self.maxTapAttempts {
+                let delay = Double(tapAttempt) * 1.5
+                Log.engine.info("CGEventTap nil (attempt \(self.tapAttempt)/\(Self.maxTapAttempts)) — retrying in \(delay)s")
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                    guard let self, self.eventTap == nil, self.config.pauseOnTyping else { return }
+                    self.setupEventTap()
+                }
+                return
+            }
+
+            Log.engine.warning("CGEventTap nil after \(Self.maxTapAttempts) attempts — Input Monitoring permission not granted")
+            guard !alertSuppressedForSession else { return }
+            DispatchQueue.main.async { [weak self] in
                 self?.showInputMonitoringAlert()
             }
             return
@@ -122,15 +160,20 @@ final class WallpaperEngine: ObservableObject {
         CFRunLoopAddSource(CFRunLoopGetMain(), src, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
         eventTap = tap
+        tapAttempt = 0
         Log.engine.info("CGEventTap installed — typing detection active")
     }
 
     private func showInputMonitoringAlert() {
         let alert = NSAlert()
         alert.messageText = "Input Monitoring permission needed"
-        alert.informativeText = "To pause wallpapers while typing, Eigenframe needs Input Monitoring permission.\n\nOpen System Settings → Privacy & Security → Input Monitoring, then enable Eigenframe.\n\nAfter granting permission, quit and relaunch Eigenframe."
+        alert.informativeText = "To pause wallpapers while typing, Eigenframe needs Input Monitoring permission.\n\nOpen System Settings → Privacy & Security → Input Monitoring, then enable Eigenframe.\n\nAfter granting permission, quit Eigenframe from its menu bar icon and reopen it. Closing this window is not enough — Eigenframe keeps running in the menu bar.\n\nIf Eigenframe is already enabled in that list, switch it off and back on: reinstalling the app can leave the setting stale."
         alert.addButton(withTitle: "Open System Settings")
         alert.addButton(withTitle: "Later")
+
+        // Never nag more than once per launch, whichever button is chosen.
+        alertSuppressedForSession = true
+
         if alert.runModal() == .alertFirstButtonReturn {
             NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent")!)
         }
@@ -168,9 +211,8 @@ final class WallpaperEngine: ObservableObject {
 
     // MARK: - Space Switching
 
-    private func handleSpaceChange(to spaceID: CGSSpaceID) {
+    private func handleSpaceChange(toUUID uuid: String) {
         guard !isPaused else { return }
-        let activeIndex = spaceManager.index(of: spaceID)
 
         // Use CATransaction to make ALL alpha changes atomic and instant.
         // This prevents any intermediate compositing frames from being visible.
@@ -178,13 +220,13 @@ final class WallpaperEngine: ObservableObject {
         CATransaction.setDisableActions(true)
         CATransaction.setAnimationDuration(0)
 
-        for (index, window) in windows {
-            if index == activeIndex {
+        for (key, window) in windows {
+            if key == uuid {
                 // Bring the active window to the front of the window order
                 // so it composites above any system transition layers.
                 window.alphaValue = 1.0
                 window.orderFrontRegardless()
-                players[index]?.play()
+                players[key]?.play()
             } else {
                 window.alphaValue = 0.0
             }
@@ -193,54 +235,54 @@ final class WallpaperEngine: ObservableObject {
         CATransaction.commit()
 
         // Force an immediate display update to flush the compositor.
-        windows[activeIndex]?.contentView?.layer?.setNeedsDisplay()
-        windows[activeIndex]?.contentView?.layer?.displayIfNeeded()
+        windows[uuid]?.contentView?.layer?.setNeedsDisplay()
+        windows[uuid]?.contentView?.layer?.displayIfNeeded()
 
-        Log.engine.info("Switched to space index \(activeIndex) (id: \(spaceID))")
+        Log.engine.info("Switched to space uuid \(uuid)")
     }
 
     // MARK: - Syncing
 
     private func syncToAssignments() {
-        let assignments    = config.assignments
-        let assignedIndices = Set(assignments.map { $0.spaceIndex })
+        let assignments   = config.assignments
+        let assignedUUIDs = Set(assignments.map { $0.spaceUUID })
 
         // Tear down windows for spaces that no longer have assignments.
-        for index in Set(windows.keys).subtracting(assignedIndices) {
-            teardown(spaceIndex: index)
+        for uuid in Set(windows.keys).subtracting(assignedUUIDs) {
+            teardown(spaceUUID: uuid)
         }
 
         // Set up or update windows for each assignment.
         for assignment in assignments {
-            let index = assignment.spaceIndex
-            let path  = assignment.mediaPath
+            let uuid = assignment.spaceUUID
+            let path = assignment.mediaPath
 
             // Skip only if the window exists AND is already showing this exact path.
             // Compare against activePaths (what the window is actually showing),
             // not config (which already has the new value after a drop).
-            if windows[index] != nil, activePaths[index] == path { continue }
+            if windows[uuid] != nil, activePaths[uuid] == path { continue }
 
-            teardown(spaceIndex: index)
+            teardown(spaceUUID: uuid)
 
             let url = URL(fileURLWithPath: path)
             guard let type = MediaType.from(url: url) else {
-                Log.engine.warning("Unsupported media type for space \(index): \(path)")
+                Log.engine.warning("Unsupported media type for space \(uuid): \(path)")
                 continue
             }
 
             switch type {
-            case .video: setupVideo(for: index, url: url)
-            case .image: setupImage(for: index, url: url)
+            case .video: setupVideo(for: uuid, url: url)
+            case .image: setupImage(for: uuid, url: url)
             }
         }
 
-        handleSpaceChange(to: spaceManager.currentSpaceID)
+        handleSpaceChange(toUUID: spaceManager.currentSpaceUUID)
         Log.engine.info("Synced \(assignments.count) assignment(s)")
     }
 
     // MARK: - Video Setup
 
-    private func setupVideo(for spaceIndex: Int, url: URL) {
+    private func setupVideo(for spaceUUID: String, url: URL) {
         let asset  = AVURLAsset(url: url, options: [AVURLAssetPreferPreciseDurationAndTimingKey: false])
         let item   = AVPlayerItem(asset: asset)
         let player = AVQueuePlayer()
@@ -257,7 +299,7 @@ final class WallpaperEngine: ObservableObject {
 
         guard let window   = makeWallpaperWindow(),
               let hostView = window.contentView else {
-            Log.engine.error("Failed to create wallpaper window for space index \(spaceIndex)")
+            Log.engine.error("Failed to create wallpaper window for space \(spaceUUID)")
             return
         }
 
@@ -269,17 +311,17 @@ final class WallpaperEngine: ObservableObject {
         // invisible, but GPU pipeline is warm for instant Space switching.
         player.play()
 
-        players[spaceIndex] = player
-        loopers[spaceIndex] = looper
-        windows[spaceIndex] = window
+        players[spaceUUID] = player
+        loopers[spaceUUID] = looper
+        windows[spaceUUID] = window
 
-        activePaths[spaceIndex] = url.path
-        Log.engine.info("Video set for space \(spaceIndex): \(url.lastPathComponent)")
+        activePaths[spaceUUID] = url.path
+        Log.engine.info("Video set for space \(spaceUUID): \(url.lastPathComponent)")
     }
 
     // MARK: - Image Setup
 
-    private func setupImage(for spaceIndex: Int, url: URL) {
+    private func setupImage(for spaceUUID: String, url: URL) {
         let image: NSImage?
         if let source = CGImageSourceCreateWithURL(url as CFURL, nil),
            let cgImage = CGImageSourceCreateImageAtIndex(source, 0, nil) {
@@ -291,7 +333,7 @@ final class WallpaperEngine: ObservableObject {
         guard let image,
               let window   = makeWallpaperWindow(),
               let hostView = window.contentView else {
-            Log.engine.error("Failed to set up image for space index \(spaceIndex)")
+            Log.engine.error("Failed to set up image for space \(spaceUUID)")
             return
         }
 
@@ -304,10 +346,10 @@ final class WallpaperEngine: ObservableObject {
             imageView.layer?.contentsScale = screen.backingScaleFactor
         }
         hostView.addSubview(imageView)
-        windows[spaceIndex] = window
+        windows[spaceUUID] = window
 
-        activePaths[spaceIndex] = url.path
-        Log.engine.info("Image set for space \(spaceIndex): \(url.lastPathComponent)")
+        activePaths[spaceUUID] = url.path
+        Log.engine.info("Image set for space \(spaceUUID): \(url.lastPathComponent)")
     }
 
     // MARK: - Window Factory
@@ -351,19 +393,19 @@ final class WallpaperEngine: ObservableObject {
 
     // MARK: - Teardown
 
-    private func teardown(spaceIndex: Int) {
-        activePaths[spaceIndex] = nil
-        players[spaceIndex]?.pause()
-        loopers[spaceIndex] = nil
-        players[spaceIndex] = nil
-        windows[spaceIndex]?.orderOut(nil)
-        windows[spaceIndex]?.contentView?.subviews.forEach { $0.removeFromSuperview() }
-        windows[spaceIndex]?.contentView?.layer?.sublayers?.forEach { $0.removeFromSuperlayer() }
-        windows[spaceIndex] = nil
+    private func teardown(spaceUUID: String) {
+        activePaths[spaceUUID] = nil
+        players[spaceUUID]?.pause()
+        loopers[spaceUUID] = nil
+        players[spaceUUID] = nil
+        windows[spaceUUID]?.orderOut(nil)
+        windows[spaceUUID]?.contentView?.subviews.forEach { $0.removeFromSuperview() }
+        windows[spaceUUID]?.contentView?.layer?.sublayers?.forEach { $0.removeFromSuperlayer() }
+        windows[spaceUUID] = nil
     }
 
     private func teardownAll() {
-        Array(windows.keys).forEach { teardown(spaceIndex: $0) }
+        Array(windows.keys).forEach { teardown(spaceUUID: $0) }
     }
 
     private func pauseAll() {
