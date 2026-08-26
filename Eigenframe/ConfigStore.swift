@@ -9,7 +9,7 @@ import OSLog
 /// The uuid (from `CGSCopyManagedDisplaySpaces`) is stable across reboots AND
 /// across reordering Spaces in Mission Control, so a wallpaper stays with its
 /// desktop when the desktop is moved. (Previous versions keyed by 1-based index,
-/// which followed the slot rather than the desktop — see the v1 migration below.)
+/// which followed the slot rather than the desktop. See the v1 migration below.)
 struct Assignment: Codable, Equatable {
     let spaceUUID: String
     let mediaPath: String
@@ -65,7 +65,7 @@ final class ConfigStore: ObservableObject {
             do {
                 if launchAtLogin {
                     try SMAppService.mainApp.register()
-                    Log.config.info("Launch at login registered — status: \(SMAppService.mainApp.status.rawValue)")
+                    Log.config.info("Launch at login registered, status: \(SMAppService.mainApp.status.rawValue)")
                 } else {
                     try SMAppService.mainApp.unregister()
                     Log.config.info("Launch at login unregistered")
@@ -113,7 +113,7 @@ final class ConfigStore: ObservableObject {
 
     func setMediaPath(_ path: String?, forSpaceUUID uuid: String) {
         if let path {
-            // Do not gate on fileExists — it returns false for files outside
+            // Do not gate on fileExists. It returns false for files outside
             // the app sandbox and for iCloud Drive files not yet downloaded.
             // AVFoundation and NSImage handle missing files gracefully at
             // render time, so we trust the path and let the engine report errors.
@@ -145,7 +145,7 @@ final class ConfigStore: ObservableObject {
 
     /// Converts queued v1 index-based assignments into uuid-based ones using the
     /// current Space order: old index *i* maps to the uuid of the *i*-th current
-    /// Space. Best-effort and one-shot — it assumes the current ordering matches
+    /// Space. Best-effort and one-shot. It assumes the current ordering matches
     /// what the user last configured, which is the most faithful reconstruction
     /// possible since v1 never recorded uuids. Runs once, after SpaceManager has
     /// a populated ordered list, then persists the v2 store.
@@ -211,7 +211,7 @@ final class ConfigStore: ObservableObject {
             }
 
             // Sync with actual SMAppService registration status rather than the
-            // saved preference — the user may have changed it in System Settings.
+            // saved preference, since the user may have changed it in System Settings.
             let actualStatus = SMAppService.mainApp.status
             launchAtLogin = (actualStatus == .enabled)
             Log.config.info("Launch at login status on load: \(actualStatus.rawValue)")

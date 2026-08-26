@@ -203,7 +203,7 @@ struct ControlPanelView: View {
                 Log.ui.info("User refreshed spaces")
             }
             .buttonStyle(GhostButtonStyle())
-            .help("Force a reload of your Space list. Normally not needed — Eigenframe detects Space changes automatically.")
+            .help("Force a reload of your Space list. Normally not needed, since Eigenframe detects Space changes automatically.")
         }
     }
 }

@@ -5,6 +5,15 @@ All notable changes to Eigenframe are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Eigenframe uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-08-26
+
+### Added
+- A step by step guide for granting Input Monitoring permission, shown in place of the old text-only alert. It explains what the permission is for in plain language, states plainly that Eigenframe is told only that a key was pressed and never what was typed, shows a picture of the switch to look for and what it looks like once it is on, and opens the correct page of System Settings on request. It also covers the two things people most often get stuck on: that the app must be quit from the menu bar rather than by closing its window, and that a permission left over from a previous version may need to be switched off and on again.
+- A "Pause While Typing" section in the help page written for people who have not changed a macOS permission before, including what to do when Eigenframe does not appear in the list, when the setting looks correct but nothing happens, and how to reach the permission list by hand.
+
+### Changed
+- The Pause while typing entry in the FAQ and the installation steps now point to the new help section rather than repeating a shortened version of it.
+
 ## [1.3.0] - 2026-08-26
 
 ### Fixed
@@ -12,7 +21,7 @@ Eigenframe uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Reordering, adding, or removing a desktop is now detected automatically. Previously the Space list was only re-read when you switched to a different desktop, so a reorder stayed invisible until you pressed "Refresh". A lightweight poll now catches the change within a fraction of a second, republishing only when the list actually differs.
 - The Input Monitoring prompt no longer appears when permission is already granted. The event tap was attempted once very early in launch, before macOS had finished resolving permissions, and a nil result was treated as a denial. It is now retried with backoff before concluding permission is missing, and appears at most once per launch.
 - The Input Monitoring prompt is no longer shown at all to users who have not enabled "Pause while typing". The tap is only installed when the feature is in use.
-- The prompt's instructions now explain that Eigenframe must be quit from its menu bar icon — it runs as a menu bar agent, so closing the window does not quit it — and that a stale permission entry may need to be toggled off and on after reinstalling.
+- The prompt now explains that Eigenframe must be quit from its menu bar icon. It runs as a menu bar agent, so closing the window does not quit it. It also explains that a stale permission entry may need to be switched off and on after reinstalling.
 
 ### Changed
 - Assignment storage format upgraded to version 2 (keyed by `space_uuid`). Existing version 1 files (keyed by `space_index`) are migrated automatically on first launch by mapping each stored index to the corresponding current Space, so existing setups are preserved.

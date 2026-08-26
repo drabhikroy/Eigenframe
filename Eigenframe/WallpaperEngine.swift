@@ -16,8 +16,8 @@ final class WallpaperEngine: ObservableObject {
     private let spaceManager = SpaceManager.shared
     private let config       = ConfigStore.shared
 
-    // Keyed by the Space's persistent uuid — stable across reboots and across
-    // reordering Spaces in Mission Control, so a window stays bound to its desktop.
+    // Keyed by the Space's persistent uuid. That is stable across reboots and
+    // across reordering in Mission Control, so a window stays bound to its desktop.
     private var players:      [String: AVQueuePlayer]  = [:]
     private var loopers:      [String: AVPlayerLooper] = [:]
     private var windows:      [String: NSWindow]       = [:]
@@ -75,7 +75,7 @@ final class WallpaperEngine: ObservableObject {
     // MARK: - Keyboard Monitoring
 
     private func setupKeyboardMonitor() {
-        // Local monitor always works — catches keys when Eigenframe has focus.
+        // Local monitor always works. It catches keys when Eigenframe has focus.
         NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             self?.handleTypingEvent()
             return event
@@ -83,14 +83,14 @@ final class WallpaperEngine: ObservableObject {
 
         // CGEventTap in listen-only mode requires Input Monitoring permission.
         // Unlike NSEvent.addGlobalMonitorForEvents (which silently returns non-nil
-        // but never fires), CGEventTap returns nil when permission is denied —
-        // giving us a reliable way to detect missing permission.
+        // but never fires), CGEventTap returns nil when permission is denied.
+        // That gives us a reliable way to detect missing permission.
         //
         // Only attempt this when the user actually wants pause-while-typing.
         // Attempting it unconditionally meant users who never enable the feature
         // were still nagged for a permission they don't need.
         guard config.pauseOnTyping else {
-            Log.engine.info("Pause-on-typing disabled — skipping event tap setup")
+            Log.engine.info("Pause-on-typing disabled. Skipping event tap setup")
             return
         }
         setupEventTap()
@@ -108,7 +108,7 @@ final class WallpaperEngine: ObservableObject {
     /// Attempts made in the current retry cycle.
     private var tapAttempt = 0
 
-    /// Set once the user dismisses the alert with "Later", so a single launch
+    /// Set once the guide has been shown, so a single launch
     /// never nags more than once.
     private var alertSuppressedForSession = false
 
@@ -132,7 +132,7 @@ final class WallpaperEngine: ObservableObject {
             },
             userInfo: selfPtr
         ) else {
-            // A nil tap usually means permission is missing — but not always.
+            // A nil tap usually means permission is missing, though not always.
             // TCC is not always ready in the first moments after launch, so a
             // single early attempt can fail even when permission IS granted.
             // Retry with backoff before concluding anything and alerting.
@@ -140,7 +140,7 @@ final class WallpaperEngine: ObservableObject {
 
             if tapAttempt < Self.maxTapAttempts {
                 let delay = Double(tapAttempt) * 1.5
-                Log.engine.info("CGEventTap nil (attempt \(self.tapAttempt)/\(Self.maxTapAttempts)) — retrying in \(delay)s")
+                Log.engine.info("CGEventTap nil (attempt \(self.tapAttempt)/\(Self.maxTapAttempts)). Retrying in \(delay)s")
                 DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
                     guard let self, self.eventTap == nil, self.config.pauseOnTyping else { return }
                     self.setupEventTap()
@@ -148,7 +148,7 @@ final class WallpaperEngine: ObservableObject {
                 return
             }
 
-            Log.engine.warning("CGEventTap nil after \(Self.maxTapAttempts) attempts — Input Monitoring permission not granted")
+            Log.engine.warning("CGEventTap nil after \(Self.maxTapAttempts) attempts. Input Monitoring permission not granted")
             guard !alertSuppressedForSession else { return }
             DispatchQueue.main.async { [weak self] in
                 self?.showInputMonitoringAlert()
@@ -161,22 +161,25 @@ final class WallpaperEngine: ObservableObject {
         CGEvent.tapEnable(tap: tap, enable: true)
         eventTap = tap
         tapAttempt = 0
-        Log.engine.info("CGEventTap installed — typing detection active")
+        Log.engine.info("CGEventTap installed. Typing detection active")
     }
 
     private func showInputMonitoringAlert() {
-        let alert = NSAlert()
-        alert.messageText = "Input Monitoring permission needed"
-        alert.informativeText = "To pause wallpapers while typing, Eigenframe needs Input Monitoring permission.\n\nOpen System Settings → Privacy & Security → Input Monitoring, then enable Eigenframe.\n\nAfter granting permission, quit Eigenframe from its menu bar icon and reopen it. Closing this window is not enough — Eigenframe keeps running in the menu bar.\n\nIf Eigenframe is already enabled in that list, switch it off and back on: reinstalling the app can leave the setting stale."
-        alert.addButton(withTitle: "Open System Settings")
-        alert.addButton(withTitle: "Later")
-
-        // Never nag more than once per launch, whichever button is chosen.
+        // Never nag more than once per launch.
         alertSuppressedForSession = true
 
-        if alert.runModal() == .alertFirstButtonReturn {
-            NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent")!)
-        }
+        PermissionGuideWindowController.shared.show(
+            onOpenSettings: {
+                NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent")!)
+            },
+            onOpenHelp: {
+                guard let helpURL = Bundle.main.url(forResource: "Help", withExtension: "html") else {
+                    Log.engine.error("Help.html not found in app bundle")
+                    return
+                }
+                NSWorkspace.shared.open(helpURL)
+            }
+        )
     }
 
     private func handleTypingEvent() {
@@ -184,14 +187,14 @@ final class WallpaperEngine: ObservableObject {
         if !isTypingPaused {
             isTypingPaused = true
             players.values.forEach { $0.rate = 0 }
-            Log.engine.info("Typing detected — wallpapers paused")
+            Log.engine.info("Typing detected. Wallpapers paused")
         }
         typingTimer?.invalidate()
         typingTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
             guard let self else { return }
             self.isTypingPaused = false
             if !self.isPaused { self.resumeCurrent() }
-            Log.engine.info("Typing stopped — wallpapers resumed")
+            Log.engine.info("Typing stopped. Wallpapers resumed")
         }
     }
 
@@ -307,8 +310,8 @@ final class WallpaperEngine: ObservableObject {
         layer.autoresizingMask = [.layerWidthSizable, .layerHeightSizable]
         hostView.layer?.addSublayer(layer)
 
-        // Pre-buffer by playing immediately — window is transparent so
-        // invisible, but GPU pipeline is warm for instant Space switching.
+        // Pre-buffer by playing immediately. The window is transparent so this
+        // is invisible, but the GPU pipeline stays warm for instant switching.
         player.play()
 
         players[spaceUUID] = player
@@ -384,7 +387,7 @@ final class WallpaperEngine: ObservableObject {
         hostView.layer?.contentsScale = screen.backingScaleFactor
         window.contentView = hostView
 
-        // Start transparent — handleSpaceChange reveals the correct window.
+        // Start transparent. handleSpaceChange reveals the correct window.
         window.alphaValue = 0.0
         window.orderFront(nil)
 
@@ -413,7 +416,7 @@ final class WallpaperEngine: ObservableObject {
     }
 
     private func resumeCurrent() {
-        // Resume all players — they stay buffered in background spaces.
+        // Resume all players. They stay buffered in background spaces.
         players.values.forEach { $0.play() }
     }
 }

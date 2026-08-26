@@ -26,8 +26,8 @@ func CGSCopyManagedDisplaySpaces(_ cid: CGSConnectionID) -> CFArray?
 ///
 /// `uuid` is macOS's own persistent identifier for the Space, read from
 /// `CGSCopyManagedDisplaySpaces`. It is the correct key for remembering which
-/// wallpaper belongs to which desktop because — unlike the two alternatives —
-/// it survives BOTH of the events that matter:
+/// wallpaper belongs to which desktop. Unlike the two alternatives, it
+/// survives BOTH of the events that matter:
 ///
 ///   • index (position in the list): changes when Spaces are reordered in
 ///     Mission Control, so it cannot follow a desktop that moves.
@@ -81,12 +81,12 @@ final class SpaceManager: ObservableObject {
         //      off-main mutation updates the model but leaves the UI stale
         //      until something else forces a redraw (e.g. the Refresh button).
         //   2. Timer.scheduledTimer attaches to the current thread's run loop
-        //      in .default mode — it never fires if that run loop isn't running,
+        //      in .default mode. It never fires if that run loop isn't running,
         //      and stalls during UI tracking. A main-queue dispatch source has
         //      neither failure mode.
 
         // 60Hz: catches active-space switches faster than the notification.
-        // Only detects a CHANGE OF ACTIVE SPACE (id64 differs) — it cannot see
+        // Only detects a CHANGE OF ACTIVE SPACE (id64 differs). It cannot see
         // reordering, since the active space's own id64 doesn't change when
         // Spaces are rearranged in Mission Control.
         let active = DispatchSource.makeTimerSource(queue: .main)
@@ -104,7 +104,7 @@ final class SpaceManager: ObservableObject {
         pollTimer = active
 
         // 5Hz: re-fetches the full ordered Space list to catch what the poll
-        // above cannot — reordering, adding, or removing a desktop without
+        // above cannot see: reordering, adding, or removing a desktop without
         // switching to a different one. macOS publishes no notification for
         // this, and private CGS notifications are version-fragile, so a light
         // periodic poll is the reliable option. refresh() republishes only when
@@ -142,7 +142,7 @@ final class SpaceManager: ObservableObject {
         let cid      = CGSMainConnectionID()
         let activeID = CGSGetActiveSpace(cid)
         guard activeID != 0 else {
-            Log.spaces.error("CGSGetActiveSpace returned 0 — window server connection may not be ready")
+            Log.spaces.error("CGSGetActiveSpace returned 0. Window server connection may not be ready")
             return
         }
 
@@ -150,7 +150,7 @@ final class SpaceManager: ObservableObject {
         currentSpaceID = activeID
 
         // Called from two pollers (60Hz active-space, 5Hz full-list), so only
-        // republish and log when something actually changed — otherwise every
+        // republish and log when something actually changed. Otherwise every
         // tick would trigger a SwiftUI re-render and log line for no reason.
         // Array equality is order-sensitive, so a Mission Control reorder
         // registers here even though the set of uuids is identical.
@@ -163,7 +163,7 @@ final class SpaceManager: ObservableObject {
             if reordered {
                 Log.spaces.info("Space order changed: \(fetched.map(\.uuid).joined(separator: ", "))")
             } else {
-                Log.spaces.info("Space list changed — now \(fetched.count) space(s)")
+                Log.spaces.info("Space list changed. Now \(fetched.count) space(s)")
             }
         }
 
@@ -184,7 +184,7 @@ final class SpaceManager: ObservableObject {
         }
     }
 
-    /// 1-based display position of a Space. For UI labels only — never a key.
+    /// 1-based display position of a Space. For UI labels only, never a key.
     func index(ofUUID uuid: String) -> Int {
         (spaces.firstIndex { $0.uuid == uuid } ?? 0) + 1
     }
@@ -209,7 +209,7 @@ final class SpaceManager: ObservableObject {
                 guard let id64 = space["id64"] as? CGSSpaceID else { continue }
                 // Prefer the persistent uuid. If the key is ever absent on some
                 // OS build, synthesize a stable per-session fallback from id64 so
-                // the app still functions — that fallback simply won't survive a
+                // the app still functions, that fallback simply won't survive a
                 // reboot (same limitation the old scheme always had).
                 let uuid = (space["uuid"] as? String) ?? "id64:\(id64)"
                 result.append(SpaceInfo(uuid: uuid, id64: id64))

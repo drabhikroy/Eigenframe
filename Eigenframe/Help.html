@@ -419,6 +419,7 @@
     <a class="nav-link" href="#installation">Installation</a>
     <a class="nav-link" href="#first-launch">First Launch</a>
     <a class="nav-link" href="#assigning">Assigning Scenes</a>
+    <a class="nav-link" href="#pause-typing">Pause While Typing</a>
 
     <span class="nav-section-label">Using the App</span>
     <a class="nav-link" href="#formats">Supported Formats</a>
@@ -484,7 +485,7 @@
           <div class="step-num">4</div>
           <div class="step-content">
             <div class="step-title">Optional: enable Pause while typing</div>
-            <div class="step-body">If you want video wallpapers to pause automatically while you type, enable the <strong>Pause while typing</strong> toggle in the control panel footer. macOS will prompt for Input Monitoring permission. Grant it in <strong>System Settings &rarr; Privacy &amp; Security &rarr; Input Monitoring</strong>. This feature is entirely optional.</div>
+            <div class="step-body">If you want video wallpapers to pause automatically while you type, turn on the <strong>Pause while typing</strong> switch at the bottom of the Eigenframe window. macOS will ask for permission, and Eigenframe will walk you through granting it. See <a href="#pause-typing" style="color:var(--cyan)">Pause While Typing</a> for full instructions. This feature is entirely optional and everything else works without it.</div>
           </div>
         </div>
       </div>
@@ -557,6 +558,109 @@
       <div class="callout callout-success" style="margin-top:20px">
         <span class="callout-icon">&#x2713;</span>
         <span>Assignments are saved automatically and restored every time the app launches. You only need to set them up once.</span>
+      </div>
+    </section>
+
+    <!-- Pause While Typing -->
+    <section class="section" id="pause-typing">
+      <div class="section-header">
+        <div class="section-icon icon-cyan">&#x2328;</div>
+        <h2>Pause While Typing</h2>
+      </div>
+
+      <p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:8px">
+        Eigenframe can pause your video wallpapers while you are typing and start them again when you stop. Some people find a moving background distracting while they work, and pausing also saves a little battery.
+      </p>
+      <p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:24px">
+        This feature is optional. Everything else in Eigenframe works whether or not you turn it on. If you skip this section, nothing else stops working.
+      </p>
+
+      <div class="callout callout-info" style="margin-bottom:28px">
+        <span class="callout-icon">&#x1F512;</span>
+        <span><strong>What Eigenframe can and cannot see.</strong> To pause while you type, macOS has to tell Eigenframe that a key was pressed. Eigenframe is told only that <em>some</em> key went down. It is not told which key, and it never records, saves, or sends anything you type. macOS calls this Input Monitoring, and it asks your permission before allowing it.</span>
+      </div>
+
+      <h3 style="color:var(--text);font-size:15px;font-weight:600;margin:0 0 16px">Turning it on</h3>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Open the Eigenframe window</div>
+            <div class="step-body">Click the Eigenframe icon in the menu bar at the top of your screen, then choose <strong>Open Control Panel</strong>. The menu bar is the strip along the very top of your screen where the clock and Wi-Fi icon live.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Turn on Pause while typing</div>
+            <div class="step-body">At the bottom of the Eigenframe window there is a switch labelled <strong>Pause while typing</strong>. Click it so it turns on.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Follow the window that appears</div>
+            <div class="step-body">Eigenframe shows a window explaining that it needs your permission, with a button that opens the correct page in System Settings for you. Click <strong>Open System Settings for me</strong> so you do not have to go looking for it yourself.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <div class="step-title">Switch Eigenframe on in the list</div>
+            <div class="step-body">System Settings opens to a list of apps. Find <strong>Eigenframe</strong> and click the switch next to its name so it turns blue. Your Mac may ask for your password or fingerprint first. That is normal, and it is your Mac asking, not Eigenframe.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <div class="step-title">Quit Eigenframe and open it again</div>
+            <div class="step-body">This step is easy to miss and the feature will not work without it. macOS only applies a new permission when an app starts fresh. Click the Eigenframe icon in the menu bar and choose <strong>Quit</strong>, then open Eigenframe again from Applications or Spotlight.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-warn" style="margin-top:24px">
+        <span class="callout-icon">&#x26A0;</span>
+        <span><strong>Closing the window is not the same as quitting.</strong> Eigenframe has no icon in the Dock because it lives in the menu bar. If you click the red button to close the Eigenframe window, the app keeps running. To actually quit it, click the Eigenframe icon in the menu bar and choose Quit.</span>
+      </div>
+
+      <h3 style="color:var(--text);font-size:15px;font-weight:600;margin:32px 0 16px">If it still does not work</h3>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">&#x2022;</div>
+          <div class="step-content">
+            <div class="step-title">Eigenframe is already switched on, but typing does nothing</div>
+            <div class="step-body">Switch it off, wait a moment, then switch it on again. When an app is replaced with a newer version, macOS sometimes keeps showing the old setting as on while no longer honoring it. Turning it off and on again clears that up. Quit Eigenframe from the menu bar afterwards and open it again.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">&#x2022;</div>
+          <div class="step-content">
+            <div class="step-title">Eigenframe is not in the list at all</div>
+            <div class="step-body">Apps only appear in that list once they have asked for the permission. Turn the <strong>Pause while typing</strong> switch off and on again inside Eigenframe, which prompts it to ask, then look at the list again.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">&#x2022;</div>
+          <div class="step-content">
+            <div class="step-title">You cannot find the permission list</div>
+            <div class="step-body">Open the Apple menu at the top left of your screen, choose <strong>System Settings</strong>, then click <strong>Privacy &amp; Security</strong> in the sidebar, then <strong>Input Monitoring</strong>. Or let Eigenframe do it for you with the button in the window it shows.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">&#x2022;</div>
+          <div class="step-content">
+            <div class="step-title">You would rather not grant the permission</div>
+            <div class="step-body">That is a reasonable choice. Turn the <strong>Pause while typing</strong> switch off and Eigenframe will stop asking. Every other feature keeps working exactly as before.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-info" style="margin-top:24px">
+        <span class="callout-icon">&#x2139;</span>
+        <span>If you built Eigenframe yourself from the source code rather than installing the released app, the permission may not stick between builds unless you sign the app with a stable certificate. See the README for how to set that up. This does not affect anyone using the downloaded release.</span>
       </div>
     </section>
 
@@ -757,7 +861,7 @@
             <span class="faq-chevron">&#x25BC;</span>
           </button>
           <div class="faq-answer">
-            This feature requires Input Monitoring permission. Go to <strong>System Settings &rarr; Privacy &amp; Security &rarr; Input Monitoring</strong> and confirm Eigenframe is listed and enabled. If it is not listed, enable the Pause while typing toggle in the app — this triggers the permission request. If you rebuild the app from source, you must use a stable signing certificate (see the README) otherwise the permission grant will not persist across builds.
+            See the <a href="#pause-typing" style="color:var(--cyan)">Pause While Typing</a> section above for step by step instructions with pictures. In short: go to <strong>System Settings &rarr; Privacy &amp; Security &rarr; Input Monitoring</strong> and confirm Eigenframe is listed and switched on, then quit Eigenframe from the menu bar and open it again. If Eigenframe is not in the list, switch Pause while typing off and on inside the app, which prompts it to ask for the permission. If Eigenframe is already switched on but nothing happens, switch it off and on again, since a stale setting can survive an app update.
           </div>
         </div>
 
@@ -819,7 +923,7 @@
         <div class="step">
           <div class="step-num">&rarr;</div>
           <div class="step-content">
-            <div class="step-title">Flow through Cosmic Tornado — Herbig-Haro 49/50 (video)</div>
+            <div class="step-title">Flow through Cosmic Tornado, Herbig-Haro 49/50 (video)</div>
             <div class="step-body">
               A James Webb Space Telescope visualization flying through the Herbig-Haro 49/50 protostellar outflow, 630 light-years from Earth.<br>
               Credit: ESA/Webb, NASA, CSA, STScI<br>
@@ -924,17 +1028,17 @@
 
       <div class="callout callout-warn" style="margin-top:10px">
         <span class="callout-icon">&#x26A0;</span>
-        <div><strong>Gatekeeper warning on first launch</strong> — Because Eigenframe is not distributed through the Mac App Store, macOS will show a security warning the first time you open it. Right-click the app and choose Open, or go to System Settings &rarr; Privacy &amp; Security and click Open Anyway.</div>
+        <div><strong>Gatekeeper warning on first launch.</strong> Because Eigenframe is not distributed through the Mac App Store, macOS will show a security warning the first time you open it. Right-click the app and choose Open, or go to System Settings &rarr; Privacy &amp; Security and click Open Anyway.</div>
       </div>
 
       <div class="callout callout-warn" style="margin-top:10px">
         <span class="callout-icon">&#x26A0;</span>
-        <div><strong>Wallpaper transition delay</strong> — There is a brief delay when switching Spaces before the wallpaper appears. This is a macOS compositor constraint. Using short, hardware-decoded video files (H.264 or HEVC) reduces the delay.</div>
+        <div><strong>Wallpaper transition delay.</strong> There is a brief delay when switching Spaces before the wallpaper appears. This is a macOS compositor constraint. Using short, hardware-decoded video files (H.264 or HEVC) reduces the delay.</div>
       </div>
 
       <div class="callout callout-warn" style="margin-top:10px">
         <span class="callout-icon">&#x26A0;</span>
-        <div><strong>Input Monitoring permission after rebuilding</strong> — If you build from source and use ad-hoc signing, the Input Monitoring permission will not persist across rebuilds. Use a self-signed certificate named <code>Eigenframe Dev</code> as described in the README to keep the permission stable.</div>
+        <div><strong>Input Monitoring permission after rebuilding.</strong> If you build from source and use ad-hoc signing, the Input Monitoring permission will not persist across rebuilds. Use a self-signed certificate named <code>Eigenframe Dev</code> as described in the README to keep the permission stable.</div>
       </div>
     </section>
 
