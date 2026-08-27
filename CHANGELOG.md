@@ -5,14 +5,24 @@ All notable changes to Eigenframe are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Eigenframe uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.4.0] - 2026-08-26
+## [1.4.1] - 2026-08-27
 
 ### Added
-- A step by step guide for granting Input Monitoring permission, shown in place of the old text-only alert. It explains what the permission is for in plain language, states plainly that Eigenframe is told only that a key was pressed and never what was typed, shows a picture of the switch to look for and what it looks like once it is on, and opens the correct page of System Settings on request. It also covers the two things people most often get stuck on: that the app must be quit from the menu bar rather than by closing its window, and that a permission left over from a previous version may need to be switched off and on again.
-- A "Pause While Typing" section in the help page written for people who have not changed a macOS permission before, including what to do when Eigenframe does not appear in the list, when the setting looks correct but nothing happens, and how to reach the permission list by hand.
+- Turning on Pause while typing now opens a short walkthrough for granting the Input Monitoring permission, in place of the block of text that was there before. It takes one step at a time, pairs each step with a picture of what will be on screen, and explains in plain language what the permission does and does not allow. All of its text can be selected and copied.
+- The walkthrough follows along as you go. It notices when System Settings comes to the front and moves to the next step, and it notices the moment the permission starts working and jumps to the end. Every step can be revisited with a Back button.
+- Instructions for adding Eigenframe to the Input Monitoring list with the plus button at the bottom left of the panel, for the case where macOS has not listed the app yet. Turning the feature on also asks macOS for the permission directly, which usually adds the entry for you.
+- An application menu appears at the top of the screen while an Eigenframe window is open, and goes away again when the last one closes. It carries About, Configure Spaces, Help, and a standard Edit menu, so text in Eigenframe's windows can be copied from a menu as well as the keyboard.
+- About Eigenframe links to the releases page and states the license and copyright. The Help menu links to the releases page and the full license text.
+- A Pause While Typing section in the help page, written for people who have not changed a macOS permission before. It covers what to do when Eigenframe is missing from the list, when the setting looks correct but nothing happens, and how to reach the list by hand.
 
 ### Changed
-- The Pause while typing entry in the FAQ and the installation steps now point to the new help section rather than repeating a shortened version of it.
+- Granting the permission usually starts Pause while typing straight away instead of requiring a restart, because Eigenframe now installs its keyboard tap as soon as it sees the permission take effect. The instructions for quitting and reopening are still shown when that does not work.
+- The permission prompt appears in well under a second rather than roughly fifteen, and fades in rather than appearing abruptly.
+- The prompt is no longer shown to people who have not turned on Pause while typing, and appears at most once per launch.
+
+### Fixed
+- The permission prompt no longer appears when the permission has already been granted. The old check ran once during launch, before macOS had finished working out what Eigenframe was allowed to do, and treated a not-yet-ready answer as a refusal.
+- The NOTICE file misspelled the app name as Eugenframe.
 
 ## [1.3.0] - 2026-08-26
 

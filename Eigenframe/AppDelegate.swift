@@ -21,6 +21,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         wallpaperEngine = engine
 
         setupStatusBar(engine: engine)
+
+        // Let the permission guide share the control panel's menu bar handling.
+        PermissionGuideWindowController.shared.windowDelegate = self
+        PermissionGuideWindowController.shared.onWillShow = { [weak self] in
+            self?.installMainMenuIfNeeded()
+        }
+
         engine.start()
 
         // Always show the control panel on launch so the app feels
@@ -86,7 +93,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - Actions
 
-    @MainActor @objc private func showControlPanel() {
+    @MainActor @objc func showControlPanel() {
         // Recreate if closed; restore last position or center on first launch.
         if controlPanelWindow == nil || !(controlPanelWindow?.isVisible ?? false) {
             guard let engine = wallpaperEngine else { return }
@@ -118,18 +125,80 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             controlPanelWindow = window
         }
 
+        installMainMenuIfNeeded()
+        controlPanelWindow?.delegate = self
         controlPanelWindow?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
         Log.ui.debug("Control panel shown")
     }
 
-    @MainActor @objc private func showAbout() {
+    @MainActor @objc func showAbout() {
         NSApp.activate(ignoringOtherApps: true)
+
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+
+        // Built as an attributed string so the release page is a real clickable
+        // link rather than a line of text the reader has to retype.
+        let credits = NSMutableAttributedString()
+        let base: [NSAttributedString.Key: Any] = [
+            .font: NSFont.systemFont(ofSize: 11),
+            .foregroundColor: NSColor.secondaryLabelColor
+        ]
+
+        credits.append(NSAttributedString(
+            string: "Assign a scene to each Mission Control Space.\n\n",
+            attributes: base
+        ))
+
+        let link = NSMutableAttributedString(string: "Check for the latest version\n", attributes: base)
+        link.addAttribute(.link,
+                          value: Self.releasesURL,
+                          range: NSRange(location: 0, length: link.length - 1))
+        credits.append(link)
+
+        credits.append(NSAttributedString(
+            string: "\nPolyForm Noncommercial License 1.0.0\nCopyright 2026 Abhik Roy",
+            attributes: base
+        ))
+
         NSApp.orderFrontStandardAboutPanel(options: [
             .applicationName:    "Eigenframe",
-            .applicationVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "",
-            .credits:            NSAttributedString(string: "Assign a unique scene to each Mission Control Space.\n\ngithub.com/drabhikroy/Eigenframe")
+            .applicationVersion: version,
+            .credits:            credits
         ])
+    }
+
+    @MainActor @objc func openReleases() {
+        NSWorkspace.shared.open(URL(string: Self.releasesURL)!)
+    }
+
+    @MainActor @objc func openLicense() {
+        NSWorkspace.shared.open(URL(string: "https://polyformproject.org/licenses/noncommercial/1.0.0")!)
+    }
+
+    static let releasesURL = "https://github.com/drabhikroy/Eigenframe/releases"
+
+    // MARK: - Application Menu
+
+    /// Eigenframe runs without a Dock icon or application menu while it is only
+    /// a status item. When a window opens, it switches to a regular app so the
+    /// menu bar is available, then switches back once the last window closes.
+    @MainActor
+    fileprivate func installMainMenuIfNeeded() {
+        if NSApp.mainMenu == nil {
+            NSApp.mainMenu = MainMenuBuilder.build(target: self)
+        }
+        if NSApp.activationPolicy() != .regular {
+            NSApp.setActivationPolicy(.regular)
+        }
+    }
+
+    @MainActor
+    fileprivate func removeMainMenuIfNoWindows() {
+        let hasVisible = NSApp.windows.contains { $0.isVisible && $0.canBecomeMain }
+        guard !hasVisible else { return }
+        NSApp.setActivationPolicy(.accessory)
+        NSApp.mainMenu = nil
     }
 
     @MainActor @objc private func toggleLaunchAtLogin() {
@@ -138,7 +207,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem?.menu?.item(withTitle: "Launch at Login")?.state = isEnabled ? .on : .off
     }
 
-    @MainActor @objc private func openHelp() {
+    @MainActor @objc func openHelp() {
         guard let helpURL = Bundle.main.url(forResource: "Help", withExtension: "html") else {
             Log.ui.error("Help.html not found in app bundle")
             return
@@ -165,5 +234,21 @@ extension AppDelegate {
             showControlPanel()
         }
         return true
+    }
+}
+
+// MARK: - Window lifecycle
+
+extension AppDelegate: NSWindowDelegate {
+
+    /// When the last Eigenframe window closes, drop back to a menu bar agent so
+    /// the Dock icon and application menu go away again.
+    @MainActor
+    func windowWillClose(_ notification: Notification) {
+        // Run after the window has actually gone, otherwise it still counts as
+        // visible and the policy would never change back.
+        DispatchQueue.main.async { [weak self] in
+            self?.removeMainMenuIfNoWindows()
+        }
     }
 }

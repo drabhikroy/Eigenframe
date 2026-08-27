@@ -1,6 +1,7 @@
 import Cocoa
 import AVFoundation
 import Combine
+import CoreGraphics
 import OSLog
 
 @MainActor
@@ -113,7 +114,7 @@ final class WallpaperEngine: ObservableObject {
     private var alertSuppressedForSession = false
 
     /// Number of times to retry before concluding permission is genuinely absent.
-    private static let maxTapAttempts = 5
+    private static let maxTapAttempts = 3
 
     private func setupEventTap() {
         let selfPtr = Unmanaged.passUnretained(self).toOpaque()
@@ -133,14 +134,20 @@ final class WallpaperEngine: ObservableObject {
             userInfo: selfPtr
         ) else {
             // A nil tap usually means permission is missing, though not always.
-            // TCC is not always ready in the first moments after launch, so a
-            // single early attempt can fail even when permission IS granted.
-            // Retry with backoff before concluding anything and alerting.
+            // TCC is occasionally not ready in the first moments after launch,
+            // so retry a couple of times before concluding anything.
+            //
+            // CGPreflightListenEventAccess answers the permission question
+            // directly, so when it says the permission is absent there is no
+            // reason to keep retrying. That turns what used to be a wait of
+            // roughly fifteen seconds into well under one.
             tapAttempt += 1
 
-            if tapAttempt < Self.maxTapAttempts {
-                let delay = Double(tapAttempt) * 1.5
-                Log.engine.info("CGEventTap nil (attempt \(self.tapAttempt)/\(Self.maxTapAttempts)). Retrying in \(delay)s")
+            let permissionKnownAbsent = !CGPreflightListenEventAccess()
+
+            if !permissionKnownAbsent && tapAttempt < Self.maxTapAttempts {
+                let delay = 0.2 * Double(tapAttempt)
+                Log.engine.info("CGEventTap nil but permission reads as granted (attempt \(self.tapAttempt)/\(Self.maxTapAttempts)). Retrying in \(delay)s")
                 DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
                     guard let self, self.eventTap == nil, self.config.pauseOnTyping else { return }
                     self.setupEventTap()
@@ -148,9 +155,11 @@ final class WallpaperEngine: ObservableObject {
                 return
             }
 
-            Log.engine.warning("CGEventTap nil after \(Self.maxTapAttempts) attempts. Input Monitoring permission not granted")
+            Log.engine.warning("Input Monitoring permission not granted. Showing the setup guide")
             guard !alertSuppressedForSession else { return }
-            DispatchQueue.main.async { [weak self] in
+            // Short pause so the guide arrives just after the click that caused
+            // it, rather than on top of it. The window fades in on arrival.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
                 self?.showInputMonitoringAlert()
             }
             return
@@ -178,6 +187,14 @@ final class WallpaperEngine: ObservableObject {
                     return
                 }
                 NSWorkspace.shared.open(helpURL)
+            },
+            onPermissionGranted: { [weak self] in
+                // The guide saw the permission start working, so install the
+                // real tap now. In most cases this means typing detection
+                // starts immediately, with no need to relaunch.
+                guard let self else { return }
+                self.tapAttempt = 0
+                self.setupEventTap()
             }
         )
     }

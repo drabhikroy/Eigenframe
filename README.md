@@ -57,7 +57,17 @@ Videos: - MP4 - MOV - M4V - MKV - AVI - WebM - HEVC - 3GP
 ## Permissions
 
 Input Monitoring is only required for the optional Pause while typing
-feature.
+feature. Everything else works without it.
+
+The first time you turn that feature on, Eigenframe opens a short
+walkthrough that takes you through granting the permission one step at a
+time, including what to do if Eigenframe is not listed in System Settings
+yet. It watches for the permission taking effect and moves along on its
+own, so in most cases there is nothing to confirm and no need to restart
+the app.
+
+Eigenframe is told only that a key was pressed. It is never told which
+key, and it does not record, save, or send anything you type.
 
 No other permissions are required.
 
