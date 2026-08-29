@@ -184,13 +184,13 @@ struct PermissionGuideView: View {
             monitor.start()
         }
         .onDisappear { monitor.stop() }
-        .onChange(of: step) { _ in onStepChange() }
-        .onChange(of: monitor.isGranted) { granted in
+        .onChange(of: step) { onStepChange() }
+        .onChange(of: monitor.isGranted) { _, granted in
             guard granted, !hasAutoAdvanced else { return }
             hasAutoAdvanced = true
             withAnimation(.easeInOut(duration: 0.3)) { step = .finish }
         }
-        .onChange(of: monitor.hasOpenedSettings) { opened in
+        .onChange(of: monitor.hasOpenedSettings) { _, opened in
             // The list is on screen, so the first step is done.
             guard opened, step == .openSettings else { return }
             withAnimation(.easeInOut(duration: 0.3)) { step = .findEigenframe }

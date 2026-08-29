@@ -5,7 +5,7 @@ Thank you for taking the time to contribute. Eigenframe is a small open source p
 ## Getting Started
 
 1. Fork the repository and clone your fork
-2. Make sure you have Xcode 15 or later and macOS 13 or later
+2. Make sure you have Xcode 15 or later and macOS 14 or later
 3. Open the project: `open Package.swift`
 4. Build and run with Cmd + R
 
@@ -23,7 +23,7 @@ Open an issue and include:
 
 1. Create a branch from `main` with a descriptive name: `fix/window-level-after-sleep`
 2. Make your changes
-3. Test on at least one Apple Silicon Mac running macOS 13 or later
+3. Test on at least one Apple Silicon Mac running macOS 14 or later
 4. Open a pull request with a clear description of the change and why it is needed
 
 ## Code Style

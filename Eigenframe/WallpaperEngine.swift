@@ -28,6 +28,10 @@ final class WallpaperEngine: ObservableObject {
     private var isTypingPaused  = false
     private var keyboardMonitor: Any? = nil
     private(set) var eventTap: CFMachPort? = nil
+    /// Held alongside the tap. Without it the source stays attached to the main
+    /// run loop after the tap is dropped, which leaks the port and leaves a
+    /// callback pointing at this object — see teardownEventTap().
+    private var eventTapSource: CFRunLoopSource? = nil
     private var typingTimer:     Timer? = nil
 
     // MARK: - Lifecycle
@@ -77,9 +81,14 @@ final class WallpaperEngine: ObservableObject {
 
     private func setupKeyboardMonitor() {
         // Local monitor always works. It catches keys when Eigenframe has focus.
-        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            self?.handleTypingEvent()
-            return event
+        // The returned token is kept so teardownKeyboardMonitor() can remove it;
+        // discarding it left the monitor installed for the life of the process
+        // and installed a second one on every call.
+        if keyboardMonitor == nil {
+            keyboardMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+                self?.handleTypingEvent()
+                return event
+            }
         }
 
         // CGEventTap in listen-only mode requires Input Monitoring permission.
@@ -104,6 +113,23 @@ final class WallpaperEngine: ObservableObject {
         alertSuppressedForSession = false
         tapAttempt = 0
         setupEventTap()
+    }
+
+    /// Called by the UI when the user turns pause-while-typing off.
+    ///
+    /// The tap sees every keystroke in the login session. Leaving it installed
+    /// after the feature that needs it has been switched off means the app keeps
+    /// a capability it is no longer using, for the rest of the session. Tearing
+    /// it down here makes the switch mean what it says, and the tap is rebuilt
+    /// in well under a second if the user turns the feature back on.
+    func disableTypingDetection() {
+        guard eventTap != nil else { return }
+        teardownEventTap()
+        typingTimer?.invalidate()
+        typingTimer   = nil
+        isTypingPaused = false
+        if !isPaused { resumeCurrent() }
+        Log.engine.info("Pause-on-typing disabled. Event tap removed")
     }
 
     /// Attempts made in the current retry cycle.
@@ -168,8 +194,9 @@ final class WallpaperEngine: ObservableObject {
         let src = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
         CFRunLoopAddSource(CFRunLoopGetMain(), src, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
-        eventTap = tap
-        tapAttempt = 0
+        eventTap       = tap
+        eventTapSource = src
+        tapAttempt     = 0
         Log.engine.info("CGEventTap installed. Typing detection active")
     }
 
@@ -208,18 +235,39 @@ final class WallpaperEngine: ObservableObject {
         }
         typingTimer?.invalidate()
         typingTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
-            guard let self else { return }
-            self.isTypingPaused = false
-            if !self.isPaused { self.resumeCurrent() }
-            Log.engine.info("Typing stopped. Wallpapers resumed")
+            // The timer is scheduled from a @MainActor context, so it fires on
+            // the main run loop. assumeIsolated states that to the compiler
+            // instead of hopping through another async dispatch, and traps
+            // loudly if the assumption is ever wrong. macOS 14+.
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                self.isTypingPaused = false
+                if !self.isPaused { self.resumeCurrent() }
+                Log.engine.info("Typing stopped. Wallpapers resumed")
+            }
         }
     }
 
-    private func teardownKeyboardMonitor() {
+    /// Fully dismantles the tap.
+    ///
+    /// The callback holds an unretained pointer back to this object, so simply
+    /// disabling the tap is not enough: the run loop source has to leave the run
+    /// loop and the mach port has to be invalidated, or a late event can arrive
+    /// against a pointer that is no longer valid.
+    private func teardownEventTap() {
         if let tap = eventTap {
             CGEvent.tapEnable(tap: tap, enable: false)
-            eventTap = nil
+            if let src = eventTapSource {
+                CFRunLoopRemoveSource(CFRunLoopGetMain(), src, .commonModes)
+            }
+            CFMachPortInvalidate(tap)
         }
+        eventTapSource = nil
+        eventTap       = nil
+    }
+
+    private func teardownKeyboardMonitor() {
+        teardownEventTap()
         if let monitor = keyboardMonitor {
             NSEvent.removeMonitor(monitor)
             keyboardMonitor = nil
@@ -284,9 +332,14 @@ final class WallpaperEngine: ObservableObject {
 
             teardown(spaceUUID: uuid)
 
-            let url = URL(fileURLWithPath: path)
+            // Re-validated here rather than trusting what was stored. The
+            // config file lives in Application Support and can change between
+            // the moment a path was saved and the moment it is rendered.
+            guard let clean = MediaPath.validated(path, context: "render") else { continue }
+
+            let url = URL(fileURLWithPath: clean)
             guard let type = MediaType.from(url: url) else {
-                Log.engine.warning("Unsupported media type for space \(uuid): \(path)")
+                Log.engine.warning("Unsupported media type for space \(uuid, privacy: .public)")
                 continue
             }
 

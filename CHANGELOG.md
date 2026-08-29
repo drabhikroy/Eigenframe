@@ -5,6 +5,24 @@ All notable changes to Eigenframe are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Eigenframe uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-08-29
+
+### Requirements
+- Eigenframe now requires macOS 14 (Sonoma) or later. Macs running macOS 13 (Ventura) should stay on 1.4.1.
+
+### Security
+- The app is now signed with the hardened runtime. Previous builds were not, which meant another program running under your account could load its own code into Eigenframe and inherit whatever permissions you had granted it. Because Eigenframe can be given Input Monitoring and starts at login, that was the most serious problem found in the review, and this is the change that closes it.
+- Turning off Pause while typing now releases the keyboard permission immediately. Before, the keystroke tap stayed installed for the rest of the session even after the switch was turned off, so the app held a capability it was no longer using.
+- The saved assignments file is now treated as untrusted. Every stored path is re-checked when the file is read and again when the media is drawn: it has to be an ordinary image or video file, not a folder, device, or pipe. The file itself is now created readable only by you, and is capped in size and in number of entries.
+- The Accessibility permission is no longer advertised. Eigenframe never used it, and it grants far more than the Input Monitoring permission the app actually needs.
+- The help page no longer loads fonts from Google. Opening it made a request to a third party every time; it now uses the fonts already on your Mac and reaches the network for nothing.
+- File paths in the system log are now explicitly marked private.
+
+### Fixed
+- The installer no longer strips the app's entitlements when copying it to the Applications folder.
+- A drag and drop that never completes no longer ties up a background thread indefinitely.
+- The keyboard tap is now fully dismantled when it is no longer needed, rather than left partly attached.
+
 ## [1.4.1] - 2026-08-27
 
 ### Added

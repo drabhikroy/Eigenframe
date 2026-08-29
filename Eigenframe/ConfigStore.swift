@@ -98,7 +98,18 @@ final class ConfigStore: ObservableObject {
         ).first!
 
         let dir = support.appendingPathComponent("Eigenframe", isDirectory: true)
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+
+        // 0o700 on the directory and 0o600 on the file below. The store holds a
+        // map of the user's file layout and is read at every launch by an app
+        // that starts at login, so it should not be world-readable the way a
+        // default 0o755/0o644 creation would leave it.
+        try? FileManager.default.createDirectory(
+            at: dir,
+            withIntermediateDirectories: true,
+            attributes: [.posixPermissions: 0o700]
+        )
+        try? FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: dir.path)
+
         storeURL = dir.appendingPathComponent("assignments.json")
         load()
     }
@@ -113,19 +124,26 @@ final class ConfigStore: ObservableObject {
 
     func setMediaPath(_ path: String?, forSpaceUUID uuid: String) {
         if let path {
-            // Do not gate on fileExists. It returns false for files outside
-            // the app sandbox and for iCloud Drive files not yet downloaded.
-            // AVFoundation and NSImage handle missing files gracefully at
-            // render time, so we trust the path and let the engine report errors.
+            // Structural validation only. It deliberately does not gate on
+            // fileExists, because that returns false for iCloud Drive files
+            // that have not been downloaded yet; AVFoundation and NSImage
+            // handle those correctly at render time. What it does reject is a
+            // path that resolves to something other than an ordinary file.
+            guard let clean = MediaPath.validated(path, context: "assignment") else { return }
+
             if let i = assignments.firstIndex(where: { $0.spaceUUID == uuid }) {
-                assignments[i] = Assignment(spaceUUID: uuid, mediaPath: path)
+                assignments[i] = Assignment(spaceUUID: uuid, mediaPath: clean)
             } else {
-                assignments.append(Assignment(spaceUUID: uuid, mediaPath: path))
+                guard assignments.count < MediaPath.maxAssignments else {
+                    Log.config.warning("Assignment limit of \(MediaPath.maxAssignments, privacy: .public) reached; ignoring new assignment")
+                    return
+                }
+                assignments.append(Assignment(spaceUUID: uuid, mediaPath: clean))
             }
-            Log.config.info("Assigned space \(uuid) -> \(path)")
+            Log.config.info("Assigned space \(uuid, privacy: .public) -> \(clean, privacy: .private)")
         } else {
             assignments.removeAll { $0.spaceUUID == uuid }
-            Log.config.info("Cleared assignment for space \(uuid)")
+            Log.config.info("Cleared assignment for space \(uuid, privacy: .public)")
         }
         save()
     }
@@ -160,12 +178,41 @@ final class ConfigStore: ObservableObject {
             }
         }
 
-        assignments             = migrated
+        assignments             = Self.sanitised(migrated)
         pendingIndexAssignments = [:]
         needsIndexMigration     = false
         save()
         Log.config.info("Migrated \(migrated.count) assignment(s) from index keys to uuid keys")
     }
+
+    // MARK: - Input sanitising
+
+    /// Upper bound on the on-disk store. A real one is a few kilobytes.
+    private static let maxStoreBytes = 1 * 1024 * 1024
+
+    /// Drops anything in a decoded store that would not survive validation:
+    /// paths that are not ordinary media files, duplicate Space keys, and
+    /// anything past the assignment ceiling. Applied to every path that comes
+    /// off disk, since the file is editable by any process running as the user.
+    private static func sanitised(_ raw: [Assignment]) -> [Assignment] {
+        var seen: Set<String> = []
+        var clean: [Assignment] = []
+
+        for entry in raw {
+            guard clean.count < maxAssignmentsLimit else { break }
+            guard !entry.spaceUUID.isEmpty, seen.insert(entry.spaceUUID).inserted else { continue }
+            guard let path = MediaPath.validated(entry.mediaPath, context: "store load") else { continue }
+            clean.append(Assignment(spaceUUID: entry.spaceUUID, mediaPath: path))
+        }
+
+        let dropped = raw.count - clean.count
+        if dropped > 0 {
+            Log.config.warning("Dropped \(dropped, privacy: .public) invalid assignment(s) while loading the store")
+        }
+        return clean
+    }
+
+    private static let maxAssignmentsLimit = MediaPath.maxAssignments
 
     // MARK: - Persistence
 
@@ -177,7 +224,9 @@ final class ConfigStore: ObservableObject {
                 pauseOnTyping: pauseOnTyping,
                 launchAtLogin: launchAtLogin
             ))
-            try data.write(to: storeURL, options: .atomic)
+            try data.write(to: storeURL, options: [.atomic])
+            // .atomic replaces the file, so permissions are reapplied each time.
+            try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: storeURL.path)
         } catch {
             Log.config.error("Failed to save: \(error.localizedDescription)")
         }
@@ -189,12 +238,23 @@ final class ConfigStore: ObservableObject {
             return
         }
         do {
+            // A well-formed store is a few kilobytes. Reading it without a
+            // ceiling means a rewritten or corrupted file can pull an arbitrary
+            // amount of data into memory before decoding ever runs.
+            let attributes = try? FileManager.default.attributesOfItem(atPath: storeURL.path)
+            let size = (attributes?[.size] as? Int) ?? 0
+            guard size <= Self.maxStoreBytes else {
+                Log.config.error("Assignments file is \(size, privacy: .public) bytes, over the \(Self.maxStoreBytes, privacy: .public) byte limit; ignoring it")
+                assignments = []
+                return
+            }
+
             let data    = try Data(contentsOf: storeURL)
             let version = ((try? JSONSerialization.jsonObject(with: data)) as? [String: Any])?["version"] as? Int ?? 1
 
             if version >= 2 {
                 let store     = try decoder.decode(PersistedStore.self, from: data)
-                assignments   = store.assignments
+                assignments   = Self.sanitised(store.assignments)
                 pauseOnTyping = store.pauseOnTyping
             } else {
                 // v1 file: stash index→path pairs; the engine calls

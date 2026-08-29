@@ -1,8 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"\>
 <plist version="1.0">
 <dict>
-    <!-- Triggers the Input Monitoring TCC prompt on macOS 13+ -->
+    <!--
+      Eigenframe is not sandboxed and cannot be. It reads the Space list through
+      private CGS window server calls and installs a session event tap, and
+      neither is available to a sandboxed process. That makes the hardened
+      runtime the only thing standing between this app's Input Monitoring grant
+      and any other process running as the same user, so the build script signs
+      with the hardened runtime option enabled.
+
+      Do NOT add any of these three entitlements. Each one re-opens that path:
+        com.apple.security.cs.disable-library-validation
+        com.apple.security.cs.allow-dyld-environment-variables
+        com.apple.security.cs.allow-unsigned-executable-memory
+
+      Note for future edits: XML forbids a doubled hyphen inside a comment, and
+      AMFI rejects the whole file when it sees one. Spell out command line flags
+      in prose here rather than writing them literally.
+
+      The key below is a sandbox entitlement and is inert for an unsandboxed
+      app. The Input Monitoring prompt is actually driven by the
+      CGEvent.tapCreate call plus NSInputMonitoringUsageDescription in
+      Info.plist. It is kept so the declared intent shows up in the output of
+      codesign when displaying entitlements.
+    -->
     <key>com.apple.security.device.input-monitoring</key>
     <true/>
 </dict>

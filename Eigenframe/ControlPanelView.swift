@@ -173,6 +173,11 @@ struct ControlPanelView: View {
                     ConfigStore.shared.pauseOnTyping = newValue
                     if newValue {
                         engine.requestTypingDetection()
+                    } else {
+                        // Give up the keystroke tap as soon as the feature that
+                        // needs it is switched off, rather than holding it for
+                        // the rest of the session.
+                        engine.disableTypingDetection()
                     }
                 }
             )) {

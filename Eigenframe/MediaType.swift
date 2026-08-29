@@ -13,12 +13,12 @@ enum MediaType: Equatable {
 
     // MARK: - Supported extensions
 
-    /// Video container extensions supported by AVFoundation on macOS 13+.
+    /// Video container extensions supported by AVFoundation on macOS 14+.
     static let videoExtensions: Set<String> = [
         "mp4", "mov", "m4v", "avi", "mkv", "webm", "hevc", "3gp", "mp4v"
     ]
 
-    /// Image format extensions supported by NSImage / ImageIO on macOS 13+.
+    /// Image format extensions supported by NSImage / ImageIO on macOS 14+.
     static let imageExtensions: Set<String> = [
         "jpg", "jpeg", "png", "heic", "heif", "gif", "webp", "tiff", "tif", "bmp"
     ]
@@ -37,7 +37,7 @@ enum MediaType: Equatable {
     // MARK: - Open panel helpers
 
     /// UTTypes accepted by NSOpenPanel. Covers both named types and extension-
-    /// based fallbacks for formats without a canonical UTType on macOS 13.
+    /// based fallbacks for formats without a canonical UTType.
     static var allowedContentTypes: [UTType] {
         let named: [UTType] = [
             .mpeg4Movie, .quickTimeMovie, .avi, .jpeg, .png,

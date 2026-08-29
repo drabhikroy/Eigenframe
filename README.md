@@ -32,7 +32,7 @@ wallpaper](docs/screenshot2.png)
 
 ## Requirements
 
--   macOS 13 (Ventura) or later
+-   macOS 14 (Sonoma) or later
 -   Apple Silicon (M1 or later)
 
 ## Install

@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; font-src 'none'; connect-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Eigenframe - Help and FAQ</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap');
 
   :root {
     --bg:        #09090f;
@@ -30,7 +30,7 @@
   html { scroll-behavior: smooth; }
 
   body {
-    font-family: 'DM Sans', -apple-system, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     background: var(--bg);
     color: var(--text);
     line-height: 1.7;
@@ -138,7 +138,7 @@
     text-transform: uppercase;
     color: var(--cyan);
     margin-bottom: 12px;
-    font-family: 'DM Mono', monospace;
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, monospace;
   }
 
   .hero h1 {
@@ -221,7 +221,7 @@
     font-size: 11px;
     font-weight: 600;
     color: var(--cyan);
-    font-family: 'DM Mono', monospace;
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, monospace;
     flex-shrink: 0;
     margin-top: 1px;
   }
@@ -231,7 +231,7 @@
   .step-body { font-size: 13.5px; color: var(--text2); line-height: 1.6; }
 
   .step-body code {
-    font-family: 'DM Mono', monospace;
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, monospace;
     font-size: 12px;
     background: rgba(255,255,255,0.06);
     padding: 1px 6px;
@@ -263,7 +263,7 @@
     border: none;
     cursor: pointer;
     text-align: left;
-    font-family: 'DM Sans', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 14px;
     font-weight: 500;
     color: var(--text);
@@ -284,7 +284,7 @@
   .faq-item.open .faq-answer { display: block; }
 
   .faq-answer code {
-    font-family: 'DM Mono', monospace;
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, monospace;
     font-size: 12px;
     background: rgba(255,255,255,0.06);
     padding: 1px 6px;
@@ -333,7 +333,7 @@
     border: 1px solid var(--border2);
     border-radius: 5px;
     padding: 1px 7px;
-    font-family: 'DM Mono', monospace;
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, monospace;
     font-size: 11px;
     color: var(--text);
     vertical-align: middle;
@@ -365,7 +365,7 @@
     font-weight: 600;
     color: var(--cyan);
     margin-bottom: 8px;
-    font-family: 'DM Mono', monospace;
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, monospace;
     letter-spacing: 0.5px;
   }
 
@@ -384,7 +384,7 @@
     border-radius: 999px;
     padding: 5px 12px;
     font-size: 11.5px;
-    font-family: 'DM Mono', monospace;
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, monospace;
     color: var(--text3);
     margin-top: 16px;
   }
@@ -449,7 +449,7 @@
 
       <div class="version-badge">
         <div class="version-dot"></div>
-        Version 1.0 &nbsp;·&nbsp; macOS 13+ &nbsp;·&nbsp; Apple Silicon
+        Version 1.0 &nbsp;·&nbsp; macOS 14+ &nbsp;·&nbsp; Apple Silicon
       </div>
     </div>
 
@@ -927,7 +927,7 @@
             <div class="step-body">
               A James Webb Space Telescope visualization flying through the Herbig-Haro 49/50 protostellar outflow, 630 light-years from Earth.<br>
               Credit: ESA/Webb, NASA, CSA, STScI<br>
-              <a href="https://www.esa.int/ESA_Multimedia/Videos/2025/03/Flow_through_Cosmic_Tornado_Herbig-Haro_49_50" style="color: var(--cyan);" target="_blank">Source: ESA</a>
+              <a href="https://www.esa.int/ESA_Multimedia/Videos/2025/03/Flow_through_Cosmic_Tornado_Herbig-Haro_49_50" style="color: var(--cyan);" target="_blank" rel="noopener noreferrer">Source: ESA</a>
             </div>
           </div>
         </div>
@@ -938,7 +938,7 @@
             <div class="step-body">
               NASA Goddard Space Flight Center visualization of light bending around a spinning black hole and its accretion disk.<br>
               Credit: NASA&apos;s Goddard Space Flight Center / Jeremy Schnittman<br>
-              <a href="https://svs.gsfc.nasa.gov/14146/" style="color: var(--cyan);" target="_blank">Source: NASA SVS 14146</a>
+              <a href="https://svs.gsfc.nasa.gov/14146/" style="color: var(--cyan);" target="_blank" rel="noopener noreferrer">Source: NASA SVS 14146</a>
             </div>
           </div>
         </div>
@@ -948,7 +948,7 @@
             <div class="step-title">More NASA imagery</div>
             <div class="step-body">
               NASA&apos;s Scientific Visualization Studio hosts hundreds of freely available space visualizations suitable for use as wallpapers.<br>
-              <a href="https://svs.gsfc.nasa.gov" style="color: var(--cyan);" target="_blank">Browse NASA SVS</a>
+              <a href="https://svs.gsfc.nasa.gov" style="color: var(--cyan);" target="_blank" rel="noopener noreferrer">Browse NASA SVS</a>
             </div>
           </div>
         </div>

@@ -11,23 +11,27 @@
     <key>CFBundleDisplayName</key>
     <string>Eigenframe</string>
     <key>CFBundleVersion</key>
-    <string>7</string>
+    <string>8</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.4.1</string>
+    <string>1.5.0</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>LSMinimumSystemVersion</key>
-    <string>13.0</string>
+    <string>14.0</string>
     <key>LSUIElement</key>
     <true/>
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
+    <!-- Input Monitoring is the only privacy permission Eigenframe asks for, and
+         only when pause-while-typing is switched on. NSAccessibilityUsageDescription
+         was declared here previously but the app never calls any Accessibility API;
+         advertising it invited users to grant a far broader permission (which
+         allows synthesising and rewriting events, not just observing them) than
+         anything the app can use. -->
     <key>NSInputMonitoringUsageDescription</key>
-    <string>Eigenframe monitors keyboard input to pause video wallpapers while you are typing.</string>
-    <key>NSAccessibilityUsageDescription</key>
-    <string>Eigenframe uses Accessibility to detect keystrokes and pause video wallpapers while you are typing.</string>
+    <string>Eigenframe watches for keystrokes only to pause video wallpapers while you type. Keystrokes are never recorded, stored, or sent anywhere.</string>
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>NSSupportsAutomaticGraphicsSwitching</key>

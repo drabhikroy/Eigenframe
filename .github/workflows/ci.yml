@@ -6,23 +6,37 @@ on:
   pull_request:
     branches: [ main ]
 
+# The default GITHUB_TOKEN is granted write access to the repository unless a
+# permissions block narrows it. This workflow only needs to read the code, so a
+# compromised or malicious dependency in the build cannot use the token to push
+# commits, publish releases, or open pull requests.
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build (macOS)
     runs-on: macos-15
 
     steps:
+      # Third-party actions should be pinned to a full commit SHA rather than a
+      # moving tag: a tag can be repointed at new code by whoever owns the
+      # repository. Get the current SHA for v4 with:
+      #   gh api repos/actions/checkout/git/ref/tags/v4 --jq .object.sha
+      # then replace the tag below with `actions/checkout@<sha> # v4`.
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Show Swift version
         run: swift --version
 
       - name: Build (debug)
-        run: swift build --configuration debug 2>&1
+        run: swift build --configuration debug
 
       - name: Build (release)
-        run: swift build --configuration release 2>&1
+        run: swift build --configuration release
 
       - name: Run tests
-        run: swift test 2>&1
+        run: swift test

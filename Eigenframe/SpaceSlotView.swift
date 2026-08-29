@@ -72,7 +72,7 @@ struct SpaceSlotView: View {
         .frame(height: 120)
         .onDrop(of: [.fileURL], isTargeted: $isDroppingOver, perform: handleDrop)
         .onAppear(perform: reloadThumbnail)
-        .onChange(of: mediaPath) { _ in reloadThumbnail() }
+        .onChange(of: mediaPath) { reloadThumbnail() }
         .contextMenu { contextMenuItems }
         .animation(.easeInOut(duration: 0.15), value: isDroppingOver)
         .animation(.easeInOut(duration: 0.15), value: isHovered)
@@ -229,26 +229,32 @@ struct SpaceSlotView: View {
                 }
 
                 let finalURL = url.resolvingSymlinksInPath()
-                Log.ui.info("Drop resolved to: \(finalURL.path)")
+                Log.ui.info("Drop resolved to: \(finalURL.path, privacy: .private)")
 
-                guard MediaType.from(url: finalURL) != nil else {
-                    Log.ui.warning("Unsupported type: \(finalURL.pathExtension)")
-                    return
-                }
+                // Same validation the store and the renderer use, so a drop
+                // cannot introduce a path the other two would have refused.
+                guard let clean = MediaPath.validated(finalURL.path, context: "drop") else { return }
 
-                resolvedPath = finalURL.path
+                resolvedPath = clean
             }
 
             // Wait for loadItem to complete on the background queue —
-            // safe here because we are NOT on the main thread.
-            semaphore.wait()
+            // safe here because we are NOT on the main thread. The wait is
+            // bounded: loadItem is serviced by whichever process started the
+            // drag, and an unbounded wait means a slow or hostile source can
+            // park this worker thread permanently. Every real drop completes in
+            // milliseconds.
+            if semaphore.wait(timeout: .now() + 5) == .timedOut {
+                Log.ui.warning("Drop item provider did not respond within 5s; ignoring the drop")
+                return
+            }
 
             if let path = resolvedPath {
                 // Dispatch the assignment back to main after the drop
                 // IPC transaction has fully completed.
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     ConfigStore.shared.setMediaPath(path, forSpaceUUID: targetUUID)
-                    Log.ui.info("Assigned space \(targetUUID) -> \(URL(fileURLWithPath: path).lastPathComponent)")
+                    Log.ui.info("Assigned space \(targetUUID, privacy: .public) -> \(URL(fileURLWithPath: path).lastPathComponent, privacy: .private)")
                 }
             }
         }
@@ -267,13 +273,16 @@ struct SpaceSlotView: View {
         panel.prompt                  = "Assign"
 
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        ConfigStore.shared.setMediaPath(url.path, forSpaceUUID: spaceUUID)
+        // Resolve before storing so the panel and the drop path both hand the
+        // store the same canonical form.
+        ConfigStore.shared.setMediaPath(url.resolvingSymlinksInPath().path, forSpaceUUID: spaceUUID)
     }
 
     // MARK: - Thumbnail
 
     private func reloadThumbnail() {
-        guard let path = mediaPath else {
+        guard let stored = mediaPath,
+              let path   = MediaPath.validated(stored, context: "thumbnail") else {
             thumbnail  = nil
             mediaType  = nil
             return
@@ -316,9 +325,13 @@ struct SpaceSlotView: View {
                     image = NSImage(contentsOfFile: url.path)
                 }
 
+                // Bind to a `let` before crossing into the MainActor closure:
+                // capturing the mutable `image` there is a warning in Swift 5
+                // and an error in the Swift 6 language mode.
+                let loaded = image
                 await MainActor.run {
-                    self.thumbnail = image
-                    Log.ui.info("Image thumbnail loaded: \(image != nil) for \(url.lastPathComponent)")
+                    self.thumbnail = loaded
+                    Log.ui.info("Image thumbnail loaded: \(loaded != nil, privacy: .public) for \(url.lastPathComponent, privacy: .private)")
                 }
             }
         case nil:
