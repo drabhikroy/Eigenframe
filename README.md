@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-blue)](LICENSE)
 ![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-black?logo=apple&logoColor=white)
 [![Platform](https://img.shields.io/badge/platform-macOS%2014%2B-lightgrey)](#requirements)
-[![Release](https://img.shields.io/badge/release-v1.41.1-blue)](https://github.com/drabhikroy/rank-and-folder/releases/tag/v1.41.1)
+[![Release](https://img.shields.io/github/v/release/drabhikroy/Eigenframe)](https://github.com/drabhikroy/Eigenframe/releases/latest)
 
 Eigenframe is a macOS app that lets you assign a different image or
 looping video to each Mission Control Space.
