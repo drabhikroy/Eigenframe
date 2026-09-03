@@ -53,9 +53,11 @@ the app is not distributed through the Mac App Store.
 
 ## Supported Formats
 
-Images: - JPEG - PNG - HEIC - GIF - WebP - TIFF - BMP
+**Images**  
+`.jpg` · `.jpeg` · `.png` · `.heic` · `.gif` · `.webp` · `.tiff` · `.bmp`
 
-Videos: - MP4 - MOV - M4V - MKV - AVI - WebM - HEVC - 3GP
+**Videos**  
+`.mp4` · `.mov` · `.m4v` · `.mkv` · `.avi` · `.webm` · `.hevc` · `.3gp`
 
 ## Permissions
 
