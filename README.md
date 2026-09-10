@@ -54,10 +54,11 @@ with Apple Inc.
 
 Download the latest `Eigenframe.dmg` from the Releases page.
 
-Open the DMG file and drag Eigenframe to your Applications folder.
+Open the DMG file and drag Eigenframe to your Applications folder, then
+open it like any other application.
 
-The first launch may require Control-click or right-click → Open because
-the app is not distributed through the Mac App Store.
+The application is signed with a Developer ID certificate and notarized
+by Apple, so it opens with a plain double click and no security warning.
 
 ## First run
 
@@ -116,14 +117,25 @@ Build requirements:
 - Homebrew
 - create-dmg
 
-Create a signing certificate named `Eigenframe Dev` in Keychain Access,
-then run:
+The build script looks for a Developer ID Application certificate in
+Keychain Access and signs with it automatically if one is present. For
+local development without a paid Apple Developer account, create a
+self-signed certificate named `Eigenframe Dev` in Keychain Access
+instead; the script falls back to it and prints a warning that the
+result is for local testing only, not for distribution.
 
 ```bash
 git clone https://github.com/drabhikroy/Eigenframe
 cd Eigenframe
 chmod +x Installer/build_and_package.sh
 ./Installer/build_and_package.sh
+```
+
+Building a signed, notarized release requires a Developer ID
+Application certificate and adds `--notarize`:
+
+```bash
+./Installer/build_and_package.sh --notarize
 ```
 
 ## Credits and background
