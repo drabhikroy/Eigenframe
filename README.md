@@ -52,13 +52,7 @@ with Apple Inc.
 
 ## Install
 
-Download the latest `Eigenframe.dmg` from the Releases page.
-
-Open the DMG file and drag Eigenframe to your Applications folder, then
-open it like any other application.
-
-The application is signed with a Developer ID certificate and notarized
-by Apple, so it opens with a plain double click and no security warning.
+Download the DMG from the [latest release](https://github.com/drabhikroy/Eigenframe/releases/latest), open it, and drag Eigenframe to your Applications folder.
 
 ## First run
 
