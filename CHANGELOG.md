@@ -5,6 +5,15 @@ All notable changes to Eigenframe are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Eigenframe uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.2] - 2026-09-20
+
+### Fixed
+- Eigenframe no longer decides that the Input Monitoring permission is missing and then fails to notice when you grant it. The check it relied on answers once and repeats that answer for as long as the app is running, so a permission switched on after the first check went unseen until Eigenframe was quit and opened again. It now tests the permission directly each time, which is what the setup guide already did.
+
+### Changed
+- The setup guide no longer opens by itself when Eigenframe starts. When the permission is not available at startup, Eigenframe waits without saying anything and installs its keyboard tap as soon as macOS allows one, including after the Mac wakes. The guide appears when you switch Pause while typing on, which is the point at which you asked for it.
+- Eigenframe is more patient at startup. A permission that is not ready in the first second of a login session is now given about half a minute to become ready before the app concludes anything.
+
 ## [1.5.0] - 2026-08-29
 
 ### Requirements

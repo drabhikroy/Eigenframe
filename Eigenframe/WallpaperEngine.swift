@@ -30,9 +30,13 @@ final class WallpaperEngine: ObservableObject {
     private(set) var eventTap: CFMachPort? = nil
     /// Held alongside the tap. Without it the source stays attached to the main
     /// run loop after the tap is dropped, which leaks the port and leaves a
-    /// callback pointing at this object — see teardownEventTap().
+    /// callback pointing at this object. See teardownEventTap().
     private var eventTapSource: CFRunLoopSource? = nil
     private var typingTimer:     Timer? = nil
+    /// Observers used while waiting for a permission that macOS has not
+    /// confirmed yet, each paired with the center that owns it. Empty whenever
+    /// the app is not waiting.
+    private var permissionObservers: [(NotificationCenter, NSObjectProtocol)] = []
 
     // MARK: - Lifecycle
 
@@ -98,12 +102,12 @@ final class WallpaperEngine: ObservableObject {
         //
         // Only attempt this when the user actually wants pause-while-typing.
         // Attempting it unconditionally meant users who never enable the feature
-        // were still nagged for a permission they don't need.
+        // were still nagged for a permission they do not need.
         guard config.pauseOnTyping else {
             Log.engine.info("Pause-on-typing disabled. Skipping event tap setup")
             return
         }
-        setupEventTap()
+        setupEventTap(trigger: .launch)
     }
 
     /// Called by the UI when the user enables pause-while-typing.
@@ -112,7 +116,7 @@ final class WallpaperEngine: ObservableObject {
         guard eventTap == nil else { return }
         alertSuppressedForSession = false
         tapAttempt = 0
-        setupEventTap()
+        setupEventTap(trigger: .userAction)
     }
 
     /// Called by the UI when the user turns pause-while-typing off.
@@ -123,6 +127,7 @@ final class WallpaperEngine: ObservableObject {
     /// it down here makes the switch mean what it says, and the tap is rebuilt
     /// in well under a second if the user turns the feature back on.
     func disableTypingDetection() {
+        stopWatchingForPermission()
         guard eventTap != nil else { return }
         teardownEventTap()
         typingTimer?.invalidate()
@@ -139,10 +144,42 @@ final class WallpaperEngine: ObservableObject {
     /// never nags more than once.
     private var alertSuppressedForSession = false
 
-    /// Number of times to retry before concluding permission is genuinely absent.
-    private static let maxTapAttempts = 3
+    /// Which path asked for the tap. They need different amounts of patience,
+    /// and only one of them should ever put a window on screen.
+    private enum TapTrigger: Equatable {
 
-    private func setupEventTap() {
+        /// The app opening, usually at login.
+        case launch
+
+        /// Someone switching pause while typing on, or granting the permission
+        /// inside the guide.
+        case userAction
+
+        /// A second look after the app came forward or the machine woke.
+        case quietRetry
+
+        /// Delays in seconds between attempts, one entry per retry.
+        ///
+        /// At login the app starts alongside everything else the session brings
+        /// up, and the service that answers permission questions is often not
+        /// ready yet. A tap refused in that window says nothing about whether
+        /// the permission was granted, so the launch schedule keeps trying for
+        /// about half a minute before concluding anything. When someone has
+        /// just clicked the switch, that service has been awake for a long time
+        /// and a refusal means what it says, so two quick retries are plenty.
+        var retryDelays: [Double] {
+            switch self {
+            case .launch:     return [0.5, 1, 2, 3, 5, 8, 10]
+            case .userAction: return [0.25, 0.5]
+            case .quietRetry: return [0.5, 1, 2]
+            }
+        }
+
+        /// Only a deliberate action earns a window. Everything else waits.
+        var showsGuideOnFailure: Bool { self == .userAction }
+    }
+
+    private func setupEventTap(trigger: TapTrigger = .userAction) {
         let selfPtr = Unmanaged.passUnretained(self).toOpaque()
 
         guard let tap = CGEvent.tapCreate(
@@ -159,25 +196,34 @@ final class WallpaperEngine: ObservableObject {
             },
             userInfo: selfPtr
         ) else {
-            // A nil tap usually means permission is missing, though not always.
-            // TCC is occasionally not ready in the first moments after launch,
-            // so retry a couple of times before concluding anything.
-            //
-            // CGPreflightListenEventAccess answers the permission question
-            // directly, so when it says the permission is absent there is no
-            // reason to keep retrying. That turns what used to be a wait of
-            // roughly fifteen seconds into well under one.
-            tapAttempt += 1
+            // A refused tap is ambiguous. Either the permission is absent, or
+            // the service that answers permission questions has not answered
+            // yet, which happens in the first moments of a login session.
+            // CGPreflightListenEventAccess cannot break the tie, because its
+            // answer is cached for the life of the process. Asked too early it
+            // says no and goes on saying no for the rest of the session, long
+            // after the permission is working. Trying the tap again is the only
+            // way to tell the two cases apart.
+            let delays = trigger.retryDelays
 
-            let permissionKnownAbsent = !CGPreflightListenEventAccess()
-
-            if !permissionKnownAbsent && tapAttempt < Self.maxTapAttempts {
-                let delay = 0.2 * Double(tapAttempt)
-                Log.engine.info("CGEventTap nil but permission reads as granted (attempt \(self.tapAttempt)/\(Self.maxTapAttempts)). Retrying in \(delay)s")
+            if tapAttempt < delays.count {
+                let delay = delays[tapAttempt]
+                tapAttempt += 1
+                Log.engine.info("CGEventTap refused (attempt \(self.tapAttempt)/\(delays.count)). Retrying in \(delay)s")
                 DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
                     guard let self, self.eventTap == nil, self.config.pauseOnTyping else { return }
-                    self.setupEventTap()
+                    self.setupEventTap(trigger: trigger)
                 }
+                return
+            }
+
+            // At login nobody asked for anything, so a four step guide on
+            // screen is the wrong answer to a question that was never put.
+            // Wait quietly instead and install the tap the moment macOS
+            // allows one.
+            guard trigger.showsGuideOnFailure else {
+                Log.engine.info("Input Monitoring not available yet. Watching for it quietly")
+                beginWatchingForPermission()
                 return
             }
 
@@ -197,7 +243,55 @@ final class WallpaperEngine: ObservableObject {
         eventTap       = tap
         eventTapSource = src
         tapAttempt     = 0
+        stopWatchingForPermission()
         Log.engine.info("CGEventTap installed. Typing detection active")
+    }
+
+    // MARK: - Waiting for a late permission
+
+    /// Starts listening for the moments when a permission that was unavailable
+    /// at launch is most likely to have become available: the app being brought
+    /// forward, the machine waking, or the session becoming active again. Each
+    /// of those retries the tap once, silently.
+    ///
+    /// Nothing polls. If the permission is genuinely absent, the app simply
+    /// never gets a tap and says nothing, which is the correct outcome for a
+    /// feature the person switched on at some point in the past.
+    private func beginWatchingForPermission() {
+        guard permissionObservers.isEmpty else { return }
+
+        let retry: @Sendable (Notification) -> Void = { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self, self.eventTap == nil, self.config.pauseOnTyping else { return }
+                self.tapAttempt = 0
+                self.setupEventTap(trigger: .quietRetry)
+            }
+        }
+
+        let app = NotificationCenter.default
+        permissionObservers.append((
+            app,
+            app.addObserver(forName: NSApplication.didBecomeActiveNotification,
+                            object: nil, queue: .main, using: retry)
+        ))
+
+        let workspace = NSWorkspace.shared.notificationCenter
+        for name in [NSWorkspace.didWakeNotification,
+                     NSWorkspace.sessionDidBecomeActiveNotification,
+                     NSWorkspace.screensDidWakeNotification] {
+            permissionObservers.append((
+                workspace,
+                workspace.addObserver(forName: name, object: nil, queue: .main, using: retry)
+            ))
+        }
+    }
+
+    private func stopWatchingForPermission() {
+        guard !permissionObservers.isEmpty else { return }
+        for (center, token) in permissionObservers {
+            center.removeObserver(token)
+        }
+        permissionObservers.removeAll()
     }
 
     private func showInputMonitoringAlert() {
@@ -267,6 +361,7 @@ final class WallpaperEngine: ObservableObject {
     }
 
     private func teardownKeyboardMonitor() {
+        stopWatchingForPermission()
         teardownEventTap()
         if let monitor = keyboardMonitor {
             NSEvent.removeMonitor(monitor)
