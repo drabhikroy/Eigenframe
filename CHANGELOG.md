@@ -5,6 +5,11 @@ All notable changes to Eigenframe are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Eigenframe uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.3] - 2026-11-24
+
+### Changed
+- The menu bar icon is larger and bolder, so it matches the height and weight of the icons beside it. It had been set as a line of text and centered by the room reserved for taller letters, which left it small and slightly low. It is now sized from the shape of the lambda itself.
+
 ## [1.5.2] - 2026-09-20
 
 ### Fixed

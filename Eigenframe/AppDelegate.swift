@@ -1,4 +1,5 @@
 import Cocoa
+import CoreText
 import ServiceManagement
 import SwiftUI
 import OSLog
@@ -50,24 +51,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
         if let button = statusItem?.button {
-            // Render a lambda symbol as a small template image for the menu bar.
-            // Template images automatically adapt to light/dark mode.
-            let image = NSImage(size: NSSize(width: 18, height: 18), flipped: false) { rect in
-                let attrs: [NSAttributedString.Key: Any] = [
-                    .font: NSFont.systemFont(ofSize: 14, weight: .medium),
-                    .foregroundColor: NSColor.black
-                ]
-                let str = NSAttributedString(string: "λ", attributes: attrs)
-                let strSize = str.size()
-                let origin = NSPoint(
-                    x: (rect.width  - strSize.width)  / 2,
-                    y: (rect.height - strSize.height) / 2
-                )
-                str.draw(at: origin)
-                return true
-            }
-            image.isTemplate = true
-            button.image = image
+            button.image = Self.menuBarIcon()
             button.setAccessibilityLabel("Eigenframe menu bar icon")
         }
 
@@ -89,6 +73,45 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Quit Eigenframe", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
 
         statusItem?.menu = menu
+    }
+
+    /// Builds the lambda for the menu bar from its glyph outline rather than
+    /// from a line of text.
+    ///
+    /// Centering text by its line box leaves the letter small and a little low,
+    /// because the box reserves room for ascenders and descenders that a lambda
+    /// never uses. Fitting the outline itself lets the mark stand as tall as the
+    /// icons beside it, and the heavier weight keeps its strokes level with
+    /// theirs. It is a template image, so macOS tints it for light and dark
+    /// menu bars.
+    private static func menuBarIcon() -> NSImage {
+        let canvas     = NSSize(width: 18, height: 18)
+        let markHeight: CGFloat = 16
+
+        let image = NSImage(size: canvas, flipped: false) { rect in
+            let font = NSFont.systemFont(ofSize: 40, weight: .semibold) as CTFont
+            var character = UniChar(0x03BB)
+            var glyph     = CGGlyph()
+
+            guard CTFontGetGlyphsForCharacters(font, &character, &glyph, 1),
+                  let outline = CTFontCreatePathForGlyph(font, glyph, nil),
+                  let context = NSGraphicsContext.current?.cgContext
+            else { return false }
+
+            let box   = outline.boundingBox
+            let scale = markHeight / box.height
+            var fit = CGAffineTransform(translationX: rect.midX, y: rect.midY)
+                .scaledBy(x: scale, y: scale)
+                .translatedBy(x: -box.midX, y: -box.midY)
+            guard let placed = outline.copy(using: &fit) else { return false }
+
+            context.setFillColor(NSColor.black.cgColor)
+            context.addPath(placed)
+            context.fillPath()
+            return true
+        }
+        image.isTemplate = true
+        return image
     }
 
     // MARK: - Actions
